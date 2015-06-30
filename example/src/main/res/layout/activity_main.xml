@@ -1,0 +1,57 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              tools:context=".MainActivity">
+
+    <Button
+            android:id="@+id/activity_main_insert_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="insert"
+            />
+
+    <Button
+            android:id="@+id/activity_main_insert_performance_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="insert performance"
+            />
+
+
+    <Button
+            android:id="@+id/activity_main_update_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="update"
+            />
+    <Button
+            android:id="@+id/activity_main_delete_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="delete"
+            />
+
+    <Button
+            android:id="@+id/activity_main_delete_all_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="delete all"
+            />
+
+    <Button
+            android:id="@+id/activity_main_query_by_builder_btn"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="query by builder"
+            />
+
+    <TextView
+            android:id="@+id/activity_main_db_data_list_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+
+
+</LinearLayout>

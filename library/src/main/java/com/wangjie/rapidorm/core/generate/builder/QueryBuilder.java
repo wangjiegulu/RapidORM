@@ -1,0 +1,119 @@
+package com.wangjie.rapidorm.core.generate.builder;
+
+import com.wangjie.rapidorm.core.config.TableConfig;
+import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
+import com.wangjie.rapidorm.util.collection.CollectionJoiner;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Author: wangjie
+ * Email: tiantian.china.2@gmail.com
+ * Date: 6/30/15.
+ */
+public class QueryBuilder<T> extends RapidBuilder {
+
+    class OrderCase {
+        public boolean isAsc;
+        public String column;
+
+        public OrderCase(String column, boolean isAsc) {
+            this.column = column;
+            this.isAsc = isAsc;
+        }
+
+        @Override
+        public String toString() {
+            return column + " " + (isAsc ? " ASC " : " DESC ");
+        }
+    }
+
+    private List<String> selectColumns;
+    private Where where;
+    private Integer limit;
+    private TableConfig<T> tableConfig;
+    private List<Object> values;
+    private List<OrderCase> orderCase;
+
+    public QueryBuilder() {
+        selectColumns = new ArrayList<>();
+        values = new ArrayList<>();
+        orderCase = new ArrayList<>();
+    }
+
+    public QueryBuilder<T> setWhere(Where where) {
+        this.where = where;
+        return this;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public QueryBuilder<T> setLimit(Integer limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    public QueryBuilder<T> addSelectColumns(List<String> selectColumns) {
+        if (null != selectColumns) {
+            this.selectColumns.addAll(selectColumns);
+        }
+        return this;
+    }
+
+    public QueryBuilder<T> addSelectColumn(String... selectColumn) {
+        this.selectColumns.addAll(Arrays.asList(selectColumn));
+        return this;
+    }
+
+    public QueryBuilder<T> addOrder(String column, boolean isAsc) {
+        orderCase.add(new OrderCase(column, isAsc));
+        return this;
+    }
+
+    public QueryBuilder<T> setTableConfig(TableConfig<T> tableConfig) {
+        this.tableConfig = tableConfig;
+        return this;
+    }
+
+    public List<Object> getValues() {
+        return values;
+    }
+
+    public String[] getValuesAsStringArray() {
+        return objectListToStringArray(values);
+    }
+
+
+    @Override
+    public String generateSql() {
+        if (null == tableConfig) {
+            throw new RapidORMRuntimeException("[generateSql() method of QueryBuilder] TableConfig is null!");
+        }
+        StringBuilder sql = new StringBuilder(" SELECT ");
+        sql.append(null == selectColumns || 0 == selectColumns.size() ? "*" : CollectionJoiner.join(selectColumns, ","));
+        sql.append(" FROM ")
+                .append(formatTableName(tableConfig.getTableName())).append(" ");
+        if (null != where) {
+            sql.append(" WHERE ")
+                    .append(where.getWhere());
+            values = where.getValues();
+        }
+
+        if (0 < orderCase.size()) {
+            sql.append(" ORDER BY ");
+            CollectionJoiner.join(orderCase, ",", sql, null);
+        }
+
+        if (null != limit) {
+            sql.append(" LIMIT ? ");
+            values.add(limit);
+        }
+        return sql.toString();
+    }
+
+
+}
