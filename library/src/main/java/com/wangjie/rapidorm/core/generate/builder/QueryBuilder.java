@@ -1,6 +1,7 @@
 package com.wangjie.rapidorm.core.generate.builder;
 
 import com.wangjie.rapidorm.core.config.TableConfig;
+import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.collection.CollectionJoiner;
 
@@ -24,10 +25,6 @@ public class QueryBuilder<T> extends RapidBuilder {
             this.isAsc = isAsc;
         }
 
-        @Override
-        public String toString() {
-            return column + " " + (isAsc ? " ASC " : " DESC ");
-        }
     }
 
     private List<String> selectColumns;
@@ -93,10 +90,12 @@ public class QueryBuilder<T> extends RapidBuilder {
         if (null == tableConfig) {
             throw new RapidORMRuntimeException("[generateSql() method of QueryBuilder] TableConfig is null!");
         }
+        values.clear();
+
         StringBuilder sql = new StringBuilder(" SELECT ");
         sql.append(null == selectColumns || 0 == selectColumns.size() ? "*" : CollectionJoiner.join(selectColumns, ","));
         sql.append(" FROM ")
-                .append(formatTableName(tableConfig.getTableName())).append(" ");
+                .append(SqlUtil.formatName(tableConfig.getTableName())).append(" ");
         if (null != where) {
             sql.append(" WHERE ")
                     .append(where.getWhere());
@@ -105,7 +104,12 @@ public class QueryBuilder<T> extends RapidBuilder {
 
         if (0 < orderCase.size()) {
             sql.append(" ORDER BY ");
-            CollectionJoiner.join(orderCase, ",", sql, null);
+            CollectionJoiner.join(orderCase, ",", sql, new CollectionJoiner.OnCollectionJoiner<OrderCase>() {
+                @Override
+                public String getJoinContent(OrderCase obj) {
+                    return obj.column + " " + (obj.isAsc ? " ASC " : " DESC ");
+                }
+            });
         }
 
         if (null != limit) {

@@ -154,4 +154,9 @@ public class SqlUtil {
         return builder;
     }
 
+
+    public static String formatName(String name) {
+        return "`" + name + "`";
+    }
+
 }

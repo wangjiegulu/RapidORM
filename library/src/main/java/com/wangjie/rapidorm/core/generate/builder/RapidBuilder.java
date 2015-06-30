@@ -22,8 +22,4 @@ public abstract class RapidBuilder {
         return array;
     }
 
-    public static String formatTableName(String tableName) {
-        return "`" + tableName + "`";
-    }
-
 }

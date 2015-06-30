@@ -1,6 +1,7 @@
 package com.wangjie.rapidorm.core.generate.builder;
 
 import com.wangjie.rapidorm.core.config.TableConfig;
+import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 
 import java.util.ArrayList;
@@ -46,7 +47,8 @@ public class DeleteBuilder<T> extends RapidBuilder {
         if (null == tableConfig) {
             throw new RapidORMRuntimeException("[generateSql() method of QueryBuilder] TableConfig is null!");
         }
-        StringBuilder sql = new StringBuilder(" DELETE FROM ").append(formatTableName(tableConfig.getTableName()));
+        values.clear();
+        StringBuilder sql = new StringBuilder(" DELETE FROM ").append(SqlUtil.formatName(tableConfig.getTableName()));
         if (null != where) {
             sql.append(" WHERE ")
                     .append(where.getWhere());

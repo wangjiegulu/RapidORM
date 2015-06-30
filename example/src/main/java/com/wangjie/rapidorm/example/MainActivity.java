@@ -36,7 +36,9 @@ public class MainActivity extends BaseActivity {
     @Override
     @AIClick({R.id.activity_main_insert_btn, R.id.activity_main_insert_performance_btn,
             R.id.activity_main_update_btn, R.id.activity_main_delete_btn,
-            R.id.activity_main_delete_all_btn, R.id.activity_main_query_by_builder_btn})
+            R.id.activity_main_delete_all_btn, R.id.activity_main_query_by_builder_btn,
+            R.id.activity_main_update_by_builder_btn, R.id.activity_main_delete_by_builder_btn
+    })
     public void onClickCallbackSample(View view) {
         switch (view.getId()) {
             case R.id.activity_main_insert_btn:
@@ -62,9 +64,33 @@ public class MainActivity extends BaseActivity {
             case R.id.activity_main_query_by_builder_btn:
                 queryByBuilder();
                 break;
+            case R.id.activity_main_update_by_builder_btn:
+                updateByBuilder();
+                queryAll();
+                break;
+            case R.id.activity_main_delete_by_builder_btn:
+                deleteByBuilder();
+                queryAll();
+                break;
 
             default:
                 break;
+        }
+    }
+
+    private void deleteByBuilder() {
+        try {
+            DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).deletePerson();
+        } catch (SQLException e) {
+            Log.e(TAG, "", e);
+        }
+    }
+
+    private void updateByBuilder() {
+        try {
+            DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).updatePerson();
+        } catch (SQLException e) {
+            Log.e(TAG, "", e);
         }
     }
 

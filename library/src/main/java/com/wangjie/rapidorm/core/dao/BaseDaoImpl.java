@@ -277,6 +277,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     private void rawExecute(SQLiteDatabase db, String sql, Object[] bindArgs) throws SQLException {
+        if (RapidORMConfig.DEBUG)
+            Log.i(TAG, "rawExecute ==> sql: " + sql + " >> args: " + Arrays.toString(bindArgs));
+
         if (null == bindArgs || 0 == bindArgs.length) {
             db.execSQL(sql);
         } else {
