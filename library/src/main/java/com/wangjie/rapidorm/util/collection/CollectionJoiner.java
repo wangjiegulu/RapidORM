@@ -11,7 +11,7 @@ import java.util.Collection;
  */
 public class CollectionJoiner {
     public interface OnCollectionJoiner<T> {
-        String getJoinContent(T obj);
+        void joinContent(StringBuilder builder, T obj);
     }
 
     public static <T> StringBuilder join(Collection<T> collection, String stuff) {
@@ -22,13 +22,17 @@ public class CollectionJoiner {
         if (null == collection) {
             return null;
         }
-        if(null == builder){
+        if (null == builder) {
             builder = new StringBuilder();
         }
         int i = 0;
         int size = collection.size();
         for (T t : collection) {
-            builder.append(null == onCollectionJoiner ? t : onCollectionJoiner.getJoinContent(t));
+            if (null != onCollectionJoiner) {
+                onCollectionJoiner.joinContent(builder, t);
+            } else {
+                builder.append(t);
+            }
             if (i != size - 1) {
                 builder.append(stuff);
             }
@@ -36,4 +40,6 @@ public class CollectionJoiner {
         }
         return builder;
     }
+
+
 }

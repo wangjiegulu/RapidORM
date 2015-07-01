@@ -1,7 +1,9 @@
 package com.wangjie.rapidorm.core.generate.statement;
 
+import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
+import com.wangjie.rapidorm.util.collection.CollectionJoiner;
 
 /**
  * Author: wangjie
@@ -15,13 +17,32 @@ public class UpdateStatement<T> extends Statement<T> {
     }
 
     @Override
-    protected String generateStatement() {
-        String tableName = tableConfig.getTableName();
+    protected String initializeStatement() {
+        final String tableName = tableConfig.getTableName();
         StringBuilder builder = new StringBuilder("UPDATE ");
         builder.append(tableName).append(" SET ");
-        SqlUtil.appendColumnsEqualPlaceholders(builder, tableConfig.getNoPkColumnConfigs());
+//        appendColumnsEqualPlaceholders(builder, tableConfig.getNoPkColumnConfigs());
+
+        CollectionJoiner.join(tableConfig.getNoPkColumnConfigs(), ",", builder, new CollectionJoiner.OnCollectionJoiner<ColumnConfig>() {
+
+            @Override
+            public void joinContent(StringBuilder builder, ColumnConfig obj) {
+                SqlUtil.formatName(builder, obj.getColumnName()).append("=?");
+            }
+        });
+
         builder.append(" WHERE ");
-        SqlUtil.appendColumnsEqValue(builder, tableName, " AND ", tableConfig.getPkColumnConfigs());
+//        SqlUtil.appendColumnsEqValue(builder, tableName, " AND ", tableConfig.getPkColumnConfigs());
+
+        CollectionJoiner.join(tableConfig.getPkColumnConfigs(), " AND ", builder, new CollectionJoiner.OnCollectionJoiner<ColumnConfig>() {
+
+            @Override
+            public void joinContent(StringBuilder builder, ColumnConfig obj) {
+                builder.append(tableName).append(".");
+                SqlUtil.formatName(builder, obj.getColumnName()).append("=?");
+            }
+        });
+
         return builder.toString();
     }
 

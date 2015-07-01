@@ -17,11 +17,11 @@ public abstract class Statement<T> {
 
     public synchronized String getStatement() {
         if (null == statement) {
-            statement = generateStatement();
+            statement = initializeStatement();
         }
         return statement;
     }
 
-    protected abstract String generateStatement();
+    protected abstract String initializeStatement();
 
 }

@@ -1,6 +1,8 @@
 package com.wangjie.rapidorm.core.dao;
 
-import java.sql.SQLException;
+import android.database.SQLException;
+import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
+
 import java.util.List;
 
 /**
@@ -26,6 +28,21 @@ public interface BaseDao<T> {
 
     int rawExecute(String sql, Object[] bindArgs) throws SQLException;
 
+    /**
+     * ********************* execute in tx *************************
+     */
+    void insertInTx(T... models) throws SQLException;
 
+    void insertInTx(Iterable<T> models) throws SQLException;
+
+    void updateInTx(T... models) throws SQLException;
+
+    void updateInTx(Iterable<T> models) throws SQLException;
+
+    void deleteInTx(T... models) throws SQLException;
+
+    void deleteInTx(Iterable<T> models) throws SQLException;
+
+    void executeInTx(RapidOrmFunc1 func1) throws SQLException;
 
 }

@@ -1,6 +1,9 @@
 package com.wangjie.rapidorm.exception;
 
-import java.sql.SQLException;
+
+import android.annotation.TargetApi;
+import android.database.SQLException;
+import android.os.Build;
 
 /**
  * Author: wangjie
@@ -11,16 +14,12 @@ public class RapidORMException extends SQLException {
     public RapidORMException() {
     }
 
-    public RapidORMException(String detailMessage) {
-        super(detailMessage);
+    public RapidORMException(String error) {
+        super(error);
     }
 
-    public RapidORMException(String detailMessage, Throwable cause) {
-        super(detailMessage, cause);
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    public RapidORMException(String error, Throwable cause) {
+        super(error, cause);
     }
-
-    public RapidORMException(Throwable cause) {
-        super(cause);
-    }
-
 }

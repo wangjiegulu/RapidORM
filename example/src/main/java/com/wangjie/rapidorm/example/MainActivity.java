@@ -1,5 +1,6 @@
 package com.wangjie.rapidorm.example;
 
+import android.database.SQLException;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -13,7 +14,7 @@ import com.wangjie.rapidorm.example.database.DatabaseFactory;
 import com.wangjie.rapidorm.example.database.dao.PersonDaoImpl;
 import com.wangjie.rapidorm.example.database.model.Person;
 
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @AILayout(R.layout.activity_main)
@@ -117,16 +118,24 @@ public class MainActivity extends BaseActivity {
             @Override
             public void run() {
                 deleteAll();
-                long start = System.currentTimeMillis();
+                List<Person> persons = new ArrayList<>();
                 for (int i = 0; i < 5000; i++) {
-                    insert();
+                    Person p = getPerson();
+                    p.setId(1 + i);
+                    p.setName("wangjie_" + i);
+                    persons.add(p);
+                }
+                long start = System.currentTimeMillis();
+                try {
+                    DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).insertInTx(persons);
+                } catch (SQLException e) {
+                    Log.e(TAG, "", e);
                 }
                 Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start));
-                deleteAll();
+//                deleteAll();
             }
         }).start();
     }
-
 
     private void insert() {
         try {

@@ -48,7 +48,8 @@ public class DeleteBuilder<T> extends RapidBuilder {
             throw new RapidORMRuntimeException("[generateSql() method of QueryBuilder] TableConfig is null!");
         }
         values.clear();
-        StringBuilder sql = new StringBuilder(" DELETE FROM ").append(SqlUtil.formatName(tableConfig.getTableName()));
+        StringBuilder sql = new StringBuilder(" DELETE FROM ");
+        SqlUtil.formatName(sql, tableConfig.getTableName());
         if (null != where) {
             sql.append(" WHERE ")
                     .append(where.getWhere());

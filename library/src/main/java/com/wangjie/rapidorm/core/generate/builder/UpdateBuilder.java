@@ -72,13 +72,15 @@ public class UpdateBuilder<T> extends RapidBuilder {
         values.clear();
 
         StringBuilder sql = new StringBuilder(" UPDATE ");
-        sql.append(SqlUtil.formatName(tableConfig.getTableName()))
-                .append(" SET ");
+        SqlUtil.formatName(sql, tableConfig.getTableName());
+        sql.append(" SET ");
+
         CollectionJoiner.join(updateCases, ",", sql, new CollectionJoiner.OnCollectionJoiner<UpdateCase>() {
+
             @Override
-            public String getJoinContent(UpdateCase obj) {
+            public void joinContent(StringBuilder builder, UpdateCase obj) {
                 values.add(obj.value);
-                return obj.column + "=?";
+                SqlUtil.formatName(builder, obj.column).append("=?");
             }
         });
 

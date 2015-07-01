@@ -99,21 +99,20 @@ public class Where {
     }
 
     private static Where single(String column, Object value, String symbol) {
-        Where where = new Where(
-                new StringBuilder("(")
-                        .append(formatColumn(column))
-                        .append(symbol)
-                        .append("?)")
-        );
+        StringBuilder builder = new StringBuilder("(");
+        SqlUtil.formatName(builder, column);
+        builder.append(symbol)
+                .append("?)");
+        Where where = new Where(builder);
         where.setValue(value);
         return where;
     }
 
     private static Where inOrNot(String column, List<Object> values, String symbol) {
         StringBuilder builder = new StringBuilder()
-                .append("(")
-                .append(formatColumn(column))
-                .append(symbol)
+                .append("(");
+        SqlUtil.formatName(builder, column);
+        builder.append(symbol)
                 .append("(");
         SqlUtil.appendPlaceholders(builder, values.size());
         builder.append(")")
@@ -202,21 +201,17 @@ public class Where {
         StringBuilder builder = new StringBuilder();
         builder.append("(");
         where.setWhere(CollectionJoiner.join(Arrays.asList(wheres), andOr, builder, new CollectionJoiner.OnCollectionJoiner<Where>() {
+
             @Override
-            public String getJoinContent(Where obj) {
+            public void joinContent(StringBuilder builder, Where obj) {
                 values.addAll(obj.getValues());
-                return obj.getWhere().toString();
+                builder.append(obj.getWhere().toString());
             }
         }));
         builder.append(")");
         where.setValues(values);
         where.setWhere(builder);
         return where;
-    }
-
-
-    private static String formatColumn(String column) {
-        return "`" + column + "`";
     }
 
 

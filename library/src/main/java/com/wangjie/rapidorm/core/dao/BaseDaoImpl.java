@@ -1,6 +1,7 @@
 package com.wangjie.rapidorm.core.dao;
 
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -12,10 +13,10 @@ import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.core.model.ModelWithoutReflection;
+import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
 import java.lang.reflect.Field;
 import java.sql.Blob;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.List;
 public class BaseDaoImpl<T> implements BaseDao<T> {
     private static final String TAG = BaseDaoImpl.class.getSimpleName();
     private final byte[] LOCK = new byte[0];
+//    private final ReadWriteLock LOCK = new ReentrantReadWriteLock();
 
     protected Class<T> clazz;
     protected TableConfig<T> tableConfig;
@@ -43,14 +45,14 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         int count = 0;
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
-                count = executeInsert(model, db);
+                count = executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             db.beginTransaction();
             try {
                 synchronized (LOCK) {
-                    count = executeInsert(model, db);
+                    count = executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
                 }
                 db.setTransactionSuccessful();
             } finally {
@@ -60,11 +62,8 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         return count;
     }
 
-    private int executeInsert(@NonNull T model, SQLiteDatabase db) throws SQLException {
-//        String sql = SqlUtil.generateInsertSql(tableConfig);
+    private int executeInsert(@NonNull T model, SQLiteDatabase db, List<ColumnConfig> insertColumnConfigs) throws SQLException {
         String sql = tableConfig.getInsertStatement().getStatement();
-
-        List<ColumnConfig> insertColumnConfigs = SqlUtil.getInsertColumnConfigs(tableConfig);
         if (0 == insertColumnConfigs.size()) {
             Log.e(TAG, "insertColumns is null");
             return 0;
@@ -193,14 +192,14 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         int count = 0;
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
-                db.execSQL(SqlUtil.generateSqlDeleteAll(tableConfig));
+                executeDeleteAll(db);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             db.beginTransaction();
             try {
                 synchronized (LOCK) {
-                    db.execSQL(SqlUtil.generateSqlDeleteAll(tableConfig));
+                    executeDeleteAll(db);
                 }
                 db.setTransactionSuccessful();
             } finally {
@@ -209,6 +208,13 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
         // todo: query change count
         return count;
+    }
+
+    private void executeDeleteAll(SQLiteDatabase db) {
+        String sql = SqlUtil.generateSqlDeleteAll(tableConfig);
+        if (RapidORMConfig.DEBUG)
+            Log.i(TAG, "executeDeleteAll ==> sql: " + sql);
+        db.execSQL(sql);
     }
 
     @Override
@@ -225,7 +231,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     @Override
     public List<T> rawQuery(String sql, String[] selectionArgs) throws SQLException {
         if (RapidORMConfig.DEBUG)
-            Log.i(TAG, "queryList ==> sql: " + sql + " >> args: " + Arrays.toString(selectionArgs));
+            Log.i(TAG, "rawQuery ==> sql: " + sql + " >> args: " + Arrays.toString(selectionArgs));
 
         List<T> resultList = new ArrayList<>();
 
@@ -287,16 +293,107 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
+    @SafeVarargs
+    @Override
+    public final void insertInTx(T... models) throws SQLException {
+        insertInTx(Arrays.asList(models));
+    }
+
+    @Override
+    public void insertInTx(final Iterable<T> models) throws SQLException {
+        final SQLiteDatabase db = getDatabase();
+        executeInTx(new RapidOrmFunc1() {
+            @Override
+            public void call() {
+                List<ColumnConfig> insertColumnConfigs = SqlUtil.getInsertColumnConfigs(tableConfig);
+                for (T model : models) {
+                    executeInsert(model, db, insertColumnConfigs);
+                }
+            }
+        });
+    }
+
+    @SafeVarargs
+    @Override
+    public final void updateInTx(T... models) throws SQLException {
+        updateInTx(Arrays.asList(models));
+    }
+
+    @Override
+    public void updateInTx(final Iterable<T> models) throws SQLException {
+        final SQLiteDatabase db = getDatabase();
+        executeInTx(new RapidOrmFunc1() {
+            @Override
+            public void call() {
+                for (T model : models) {
+                    executeUpdate(model, db);
+                }
+            }
+        });
+    }
+
+    @SafeVarargs
+    @Override
+    public final void deleteInTx(T... models) throws SQLException {
+        deleteInTx(Arrays.asList(models));
+    }
+
+    @Override
+    public void deleteInTx(final Iterable<T> models) throws SQLException {
+        final SQLiteDatabase db = getDatabase();
+        executeInTx(new RapidOrmFunc1() {
+            @Override
+            public void call() {
+                for (T model : models) {
+                    executeDelete(model, db);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void executeInTx(RapidOrmFunc1 func1) throws SQLException {
+        if (null == func1) {
+            return;
+        }
+        SQLiteDatabase db = getDatabase();
+        db.beginTransaction();
+        try {
+            synchronized (LOCK) {
+                func1.call();
+            }
+            db.setTransactionSuccessful();
+        } catch (SQLException e) {
+            Log.e(TAG, "", e);
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+
     public SQLiteDatabase getDatabase() {
         return DatabaseProcessor.getInstance().getDb();
     }
 
+    /**
+     * 关闭cursor
+     *
+     * @param cursor
+     */
     protected void closeCursor(Cursor cursor) {
         if (null != cursor) {
             cursor.close();
         }
     }
 
+    /**
+     * 反射获取cursor中对应field的值
+     *
+     * @param cursor
+     * @param fieldType
+     * @param index
+     * @return
+     */
     protected Object getObject(Cursor cursor, Class fieldType, int index) {
         if (null == cursor) {
             return null;
@@ -319,18 +416,33 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         return null;
     }
 
+    /**
+     * 构建一个QueryBuilder
+     *
+     * @return
+     */
     public QueryBuilder<T> queryBuilder() {
         QueryBuilder<T> queryBuilder = new QueryBuilder<>();
         queryBuilder.setTableConfig(tableConfig);
         return queryBuilder;
     }
 
+    /**
+     * 构建一个UpdateBuilder
+     *
+     * @return
+     */
     public UpdateBuilder<T> updateBuilder() {
         UpdateBuilder<T> updateBuilder = new UpdateBuilder<>();
         updateBuilder.setTableConfig(tableConfig);
         return updateBuilder;
     }
 
+    /**
+     * 构建一个DeleteBuilder
+     *
+     * @return
+     */
     public DeleteBuilder<T> deleteBuilder() {
         DeleteBuilder<T> deleteBuilder = new DeleteBuilder<>();
         deleteBuilder.setTableConfig(tableConfig);

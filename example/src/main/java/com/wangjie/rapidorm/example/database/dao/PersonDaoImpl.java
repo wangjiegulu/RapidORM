@@ -1,5 +1,6 @@
 package com.wangjie.rapidorm.example.database.dao;
 
+import android.database.SQLException;
 import com.wangjie.rapidorm.core.dao.BaseDaoImpl;
 import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
@@ -7,7 +8,6 @@ import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.builder.Where;
 import com.wangjie.rapidorm.example.database.model.Person;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**

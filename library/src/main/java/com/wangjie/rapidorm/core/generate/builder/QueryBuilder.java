@@ -94,8 +94,10 @@ public class QueryBuilder<T> extends RapidBuilder {
 
         StringBuilder sql = new StringBuilder(" SELECT ");
         sql.append(null == selectColumns || 0 == selectColumns.size() ? "*" : CollectionJoiner.join(selectColumns, ","));
-        sql.append(" FROM ")
-                .append(SqlUtil.formatName(tableConfig.getTableName())).append(" ");
+        sql.append(" FROM ");
+        SqlUtil.formatName(sql, tableConfig.getTableName());
+        sql.append(" ");
+
         if (null != where) {
             sql.append(" WHERE ")
                     .append(where.getWhere());
@@ -105,9 +107,10 @@ public class QueryBuilder<T> extends RapidBuilder {
         if (0 < orderCase.size()) {
             sql.append(" ORDER BY ");
             CollectionJoiner.join(orderCase, ",", sql, new CollectionJoiner.OnCollectionJoiner<OrderCase>() {
+
                 @Override
-                public String getJoinContent(OrderCase obj) {
-                    return obj.column + " " + (obj.isAsc ? " ASC " : " DESC ");
+                public void joinContent(StringBuilder builder, OrderCase obj) {
+                    SqlUtil.formatName(builder, obj.column).append(" ").append(obj.isAsc ? " ASC " : " DESC ");
                 }
             });
         }

@@ -3,6 +3,7 @@ package com.wangjie.rapidorm.core.generate.statement;
 import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
+import com.wangjie.rapidorm.util.collection.CollectionJoiner;
 
 import java.util.List;
 
@@ -17,14 +18,21 @@ public class InsertStatement<T> extends Statement<T> {
     }
 
     @Override
-    protected String generateStatement() {
+    protected String initializeStatement() {
         List<ColumnConfig> insertColumns = getInsertColumnConfigs(tableConfig);
         StringBuilder builder = new StringBuilder(" INSERT INTO ");
         builder.append(tableConfig.getTableName()).append(" (");
-        SqlUtil.appendColumns(builder, insertColumns);
+
+        CollectionJoiner.join(insertColumns, ",", builder, new CollectionJoiner.OnCollectionJoiner<ColumnConfig>() {
+            @Override
+            public void joinContent(StringBuilder builder, ColumnConfig obj) {
+                SqlUtil.formatName(builder, obj.getColumnName());
+            }
+        });
+
         builder.append(") VALUES (");
         SqlUtil.appendPlaceholders(builder, insertColumns.size());
-        builder.append(')');
+        builder.append(")");
         return builder.toString();
     }
 

@@ -21,6 +21,7 @@ import java.util.List;
  * Date: 6/25/15.
  */
 public class TableConfig<T> {
+    private static final String TAG = TableConfig.class.getSimpleName();
     private String tableName;
     private Class<T> tableClazz;
 
