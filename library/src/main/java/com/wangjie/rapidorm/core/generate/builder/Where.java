@@ -14,16 +14,6 @@ import java.util.List;
  * Date: 6/30/15.
  */
 public class Where {
-    private StringBuilder where;
-    private List<Object> values = new ArrayList<>();
-
-    public Where() {
-    }
-
-    public Where(StringBuilder where) {
-        this.where = where;
-    }
-
     /**
      * 相等条件判断
      *
@@ -66,6 +56,28 @@ public class Where {
      */
     public static Where lt(String column, Object value) {
         return single(column, value, " < ");
+    }
+
+    /**
+     * 大于等于条件
+     *
+     * @param column
+     * @param value
+     * @return
+     */
+    public static Where ge(String column, Object value) {
+        return single(column, value, " >= ");
+    }
+
+    /**
+     * 小于等于条件
+     *
+     * @param column
+     * @param value
+     * @return
+     */
+    public static Where le(String column, Object value) {
+        return single(column, value, " <= ");
     }
 
     /**
@@ -144,13 +156,40 @@ public class Where {
     }
 
     private static Where isNull(String column, boolean isNull) {
-        return new Where(
-                new StringBuilder()
-                        .append("(")
-                        .append(column)
-                        .append(isNull ? " IS NULL " : " IS NOT NULL ")
-                        .append(")")
-        );
+        StringBuilder builder = new StringBuilder()
+                .append("(");
+        SqlUtil.formatName(builder, column);
+        builder.append(isNull ? " IS NULL " : " IS NOT NULL ")
+                .append(")");
+        return new Where(builder);
+    }
+
+    /**
+     * "BETWEEN ... AND ..." condition
+     *
+     * @param column
+     * @param value1
+     * @param value2
+     * @return
+     */
+    public static Where between(String column, Object value1, Object value2) {
+        StringBuilder builder = new StringBuilder("(");
+        SqlUtil.formatName(builder, column);
+        builder.append(" BETWEEN ? AND ? ")
+                .append(")");
+        Where where = new Where(builder);
+        where.setValues(value1, value2);
+        return where;
+    }
+
+    public static Where like(String column, Object value) {
+        StringBuilder builder = new StringBuilder("(");
+        SqlUtil.formatName(builder, column);
+        builder.append(" LIKE ? ")
+                .append(")");
+        Where where = new Where(builder);
+        where.setValue(value);
+        return where;
     }
 
     /**
@@ -161,6 +200,10 @@ public class Where {
      * @return
      */
     public static Where raw(String rawWhere, Object... values) {
+        return raw(rawWhere, Arrays.asList(values));
+    }
+
+    public static Where raw(String rawWhere, List<Object> values) {
         Where where = new Where();
         where.setWhere(new StringBuilder(rawWhere));
         where.setValues(values);
@@ -174,6 +217,10 @@ public class Where {
      * @return
      */
     public static Where and(Where... wheres) {
+        return and(Arrays.asList(wheres));
+    }
+
+    public static Where and(List<Where> wheres) {
         return andOr(" AND ", wheres);
     }
 
@@ -184,23 +231,27 @@ public class Where {
      * @return
      */
     public static Where or(Where... wheres) {
+        return or(Arrays.asList(wheres));
+    }
+
+    public static Where or(List<Where> wheres) {
         return andOr(" OR ", wheres);
     }
 
-    private static Where andOr(String andOr, Where... wheres) {
-        int len = wheres.length;
+    private static Where andOr(String andOr, List<Where> wheres) {
+        int len = wheres.size();
         if (1 > len) {
             throw new RapidORMRuntimeException(andOr + " operation of Where must has more than zero arg!");
         }
         if (1 == len) {
-            return wheres[0];
+            return wheres.get(0);
         }
 
         Where where = new Where();
         final List<Object> values = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
         builder.append("(");
-        where.setWhere(CollectionJoiner.join(Arrays.asList(wheres), andOr, builder, new CollectionJoiner.OnCollectionJoiner<Where>() {
+        where.setWhere(CollectionJoiner.join(wheres, andOr, builder, new CollectionJoiner.OnCollectionJoiner<Where>() {
 
             @Override
             public void joinContent(StringBuilder builder, Where obj) {
@@ -214,6 +265,16 @@ public class Where {
         return where;
     }
 
+
+    private StringBuilder where;
+    private List<Object> values = new ArrayList<>();
+
+    public Where() {
+    }
+
+    public Where(StringBuilder where) {
+        this.where = where;
+    }
 
     public StringBuilder getWhere() {
         return where;
@@ -236,15 +297,32 @@ public class Where {
     }
 
     public void setValues(Object... values) {
-        if (null == values) {
-            this.values.clear();
-        } else {
-            this.values = Arrays.asList(values);
-        }
+        setValues(Arrays.asList(values));
     }
 
     public void setValue(Object value) {
-        values.add(value);
+        values.clear();
+        if (null != value) {
+            values.add(value);
+        }
+    }
+
+    public void addValue(Object value) {
+        if (null != value) {
+            values.add(value);
+        }
+    }
+
+    public void addValues(Object... values) {
+        addValues(Arrays.asList(values));
+    }
+
+    public void addValues(List<Object> values) {
+        if (null == values) {
+            this.values.clear();
+        } else {
+            this.values.addAll(values);
+        }
     }
 
 

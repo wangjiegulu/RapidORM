@@ -53,13 +53,15 @@ public class PersonDaoImpl extends BaseDaoImpl<Person> {
 
     private Where getTestWhere() {
         return Where.and(
-                Where.eq(Person.COLUMN_NAME, "wangjie"),
+//                Where.eq(Person.COLUMN_NAME, "wangjie"),
+                Where.like(Person.COLUMN_NAME, "%wangjie%"),
                 Where.lt(Person.COLUMN_ID, 200),
 //                Where.raw(Person.COLUMN_AGE + " > ? and " + Person.COLUMN_ADDRESS + " is not null", 8),
                 Where.or(
-                        Where.in(Person.COLUMN_AGE, 19, 29, 39),
+//                        Where.in(Person.COLUMN_AGE, 19, 29, 39),
+                        Where.between(Person.COLUMN_AGE, 19, 39),
                         Where.isNull(Person.COLUMN_ADDRESS)
-                ),
+                        ),
                 Where.eq(Person.COLUMN_TYPE_ID, 1)
         );
     }

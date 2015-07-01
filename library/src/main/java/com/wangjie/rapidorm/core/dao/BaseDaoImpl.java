@@ -219,6 +219,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public int insertOrUpdate(@NonNull T model) throws SQLException {
+        // todo: insert Or Update
         return 0;
     }
 
