@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.wangjie.androidinject.annotation.annotations.base.AIClick;
 import com.wangjie.androidinject.annotation.annotations.base.AILayout;
 import com.wangjie.androidinject.annotation.annotations.base.AIView;
+import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.example.database.DatabaseFactory;
 import com.wangjie.rapidorm.example.database.dao.PersonDaoImpl;
 import com.wangjie.rapidorm.example.database.model.Person;
@@ -97,7 +98,7 @@ public class MainActivity extends BaseActivity {
 
     private void queryByBuilder() {
         try {
-            List<Person> personList = DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).findPersons();
+            List<Person> personList = DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).findPersonsByWhere();
             dataListTv.setText("query by builder" + personList.toString());
         } catch (SQLException e) {
             Log.e(TAG, "", e);
@@ -118,6 +119,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void run() {
                 deleteAll();
+                RapidORMConfig.DEBUG = false;
                 List<Person> persons = new ArrayList<>();
                 for (int i = 0; i < 5000; i++) {
                     Person p = getPerson();
@@ -132,10 +134,40 @@ public class MainActivity extends BaseActivity {
                     Log.e(TAG, "", e);
                 }
                 Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start));
+                RapidORMConfig.DEBUG = true;
 //                deleteAll();
             }
         }).start();
     }
+
+//    private void insertPerformance() {
+//        Log.d(TAG, "insertPerformance start...");
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                deleteAll();
+//                List<Person> persons = new ArrayList<>();
+//                for (int i = 0; i < 5000; i++) {
+//                    Person p = getPerson();
+//                    p.setId(1 + i);
+//                    p.setName("wangjie_" + i);
+//                    persons.add(p);
+//                }
+//
+//                long start = System.currentTimeMillis();
+//                for(Person person : persons){
+//                    try {
+//                        DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).executeInsert(person, DatabaseProcessor.getInstance().getDb(), SqlUtil.getInsertColumnConfigs(DatabaseProcessor.getInstance().getTableConfig(Person.class)));
+//                    } catch (SQLException e) {
+//                        Log.e(TAG, "", e);
+//                    }
+//                }
+//                Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start));
+////                deleteAll();
+//            }
+//        }).start();
+//    }
+
 
     private void insert() {
         try {
@@ -151,6 +183,7 @@ public class MainActivity extends BaseActivity {
         p.setId(100);
         p.setTypeId(1);
         p.setName("wangjie_modified");
+        p.setStudent(false);
         try {
             DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).update(p);
         } catch (SQLException e) {
@@ -178,13 +211,14 @@ public class MainActivity extends BaseActivity {
         person.setAge(29);
         person.setBirth(System.currentTimeMillis());
         person.setAddress("address");
+        person.setStudent(true);
         return person;
     }
 
     private void queryAll() {
         try {
-            List<Person> personList = DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).queryAll();
-            dataListTv.setText("all data" + personList.toString());
+            List<Person> personList = DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).findPersons();
+            dataListTv.setText("last 10 datas: " + personList.toString());
         } catch (SQLException e) {
             Log.e(TAG, "", e);
         }

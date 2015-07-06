@@ -1,6 +1,7 @@
 package com.wangjie.rapidorm.core.dao;
 
 import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
 import java.util.List;
@@ -12,21 +13,21 @@ import java.util.List;
  */
 public interface BaseDao<T> {
 
-    int insert(T model) throws SQLException;
+    void insert(T model) throws SQLException;
 
-    int update(T model) throws SQLException;
+    void update(T model) throws SQLException;
 
-    int delete(T model) throws SQLException;
+    void delete(T model) throws SQLException;
 
-    int deleteAll() throws SQLException;
+    void deleteAll() throws SQLException;
 
-    int insertOrUpdate(T model) throws SQLException;
+    void insertOrReplace(T model) throws SQLException;
 
     List<T> queryAll() throws SQLException;
 
     List<T> rawQuery(String sql, String[] selectionArgs) throws SQLException;
 
-    int rawExecute(String sql, Object[] bindArgs) throws SQLException;
+    void rawExecute(String sql, Object[] bindArgs) throws SQLException;
 
     /**
      * ********************* execute in tx *************************
@@ -43,6 +44,6 @@ public interface BaseDao<T> {
 
     void deleteInTx(Iterable<T> models) throws SQLException;
 
-    void executeInTx(RapidOrmFunc1 func1) throws SQLException;
+    void executeInTx(SQLiteDatabase db, RapidOrmFunc1 func1) throws SQLException;
 
 }

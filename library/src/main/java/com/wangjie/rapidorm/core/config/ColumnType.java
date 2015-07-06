@@ -15,8 +15,8 @@ public class ColumnType {
         if (String.class == typeClazz) {
             return "TEXT";
         } else if (Long.class == typeClazz || long.class == typeClazz) {
-            return "INTEGER";
-        } else if (Integer.class == typeClazz || int.class == typeClazz) {
+            return "LONG";
+        } else if (Integer.class == typeClazz || int.class == typeClazz || boolean.class == typeClazz || Boolean.class == typeClazz) {
             return "INTEGER";
         } else if (Short.class == typeClazz || short.class == typeClazz) {
             return "SHORT";

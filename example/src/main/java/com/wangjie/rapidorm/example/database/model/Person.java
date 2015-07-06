@@ -2,6 +2,7 @@ package com.wangjie.rapidorm.example.database.model;
 
 import com.wangjie.rapidorm.annotations.Column;
 import com.wangjie.rapidorm.annotations.Table;
+import com.wangjie.rapidorm.example.database.model.config.PersonProperty;
 
 import java.io.Serializable;
 
@@ -10,32 +11,29 @@ import java.io.Serializable;
  * Email: tiantian.china.2@gmail.com
  * Date: 6/25/15.
  */
-@Table
-public class Person implements Serializable/*, ModelWithoutReflection*/ {
-    public static final String COLUMN_ID = "id";
-    public static final String COLUMN_TYPE_ID = "typeId";
-    public static final String COLUMN_NAME = "name";
-    public static final String COLUMN_AGE = "age";
-    public static final String COLUMN_ADDRESS = "address";
-    public static final String COLUMN_BIRTH = "birth";
+@Table(propertyClazz = PersonProperty.class)
+public class Person implements Serializable{
 
-    @Column(name = COLUMN_ID, primaryKey = true, autoincrement = true)
+    @Column(primaryKey = true)
     private Integer id;
 
-    @Column(name = COLUMN_TYPE_ID, primaryKey = true, autoincrement = true)
+    @Column(primaryKey = true)
     private Integer typeId;
 
-    @Column(name = COLUMN_NAME)
+    @Column
     private String name;
 
-    @Column(name = COLUMN_AGE)
+    @Column
     private Integer age;
 
-    @Column(name = COLUMN_ADDRESS)
+    @Column
     private String address;
 
-    @Column(name = COLUMN_BIRTH)
+    @Column
     private Long birth;
+
+    @Column
+    private Boolean student;
 
     public Integer getId() {
         return id;
@@ -85,6 +83,14 @@ public class Person implements Serializable/*, ModelWithoutReflection*/ {
         this.typeId = typeId;
     }
 
+    public Boolean isStudent() {
+        return student;
+    }
+
+    public void setStudent(Boolean student) {
+        this.student = student;
+    }
+
     @Override
     public String toString() {
         return "Person{" +
@@ -94,30 +100,8 @@ public class Person implements Serializable/*, ModelWithoutReflection*/ {
                 ", age=" + age +
                 ", address='" + address + '\'' +
                 ", birth=" + birth +
+                ", student=" + student +
                 '}';
     }
 
-//    @Override
-//    public void bindInsertArgs(List<Object> insertArgs) {
-//        insertArgs.add(id);
-//        insertArgs.add(typeId);
-//        insertArgs.add(name);
-//        insertArgs.add(age);
-//        insertArgs.add(address);
-//        insertArgs.add(birth);
-//    }
-//
-//    @Override
-//    public void bindUpdateArgs(List<Object> updateArgs) {
-//        updateArgs.add(name);
-//        updateArgs.add(age);
-//        updateArgs.add(address);
-//        updateArgs.add(birth);
-//    }
-//
-//    @Override
-//    public void bindPkArgs(List<Object> pkArgs) {
-//        pkArgs.add(id);
-//        pkArgs.add(typeId);
-//    }
 }

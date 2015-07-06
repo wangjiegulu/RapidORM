@@ -1,12 +1,12 @@
 package com.wangjie.rapidorm.example.database.dao;
 
 import android.database.SQLException;
-import com.wangjie.rapidorm.core.dao.BaseDaoImpl;
 import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.builder.Where;
 import com.wangjie.rapidorm.example.database.model.Person;
+import com.wangjie.rapidorm.example.database.model.config.PersonProperty;
 
 import java.util.List;
 
@@ -15,19 +15,20 @@ import java.util.List;
  * Email: tiantian.china.2@gmail.com
  * Date: 6/26/15.
  */
-public class PersonDaoImpl extends BaseDaoImpl<Person> {
+public class PersonDaoImpl extends XBaseDaoImpl<Person> {
     public PersonDaoImpl() {
         super(Person.class);
     }
 
-    public List<Person> findPersons() throws SQLException {
+    public List<Person> findPersonsByWhere() throws SQLException {
         Where where = getTestWhere();
 
         QueryBuilder<Person> queryBuilder = queryBuilder()
-                .addSelectColumn(Person.COLUMN_ID, Person.COLUMN_NAME)
+                .addSelectColumn(PersonProperty.id.column, PersonProperty.typeId.column, PersonProperty.name.column,
+                        PersonProperty.age.column, PersonProperty.birth.column, PersonProperty.address.column)
                 .setWhere(where)
-                .addOrder(Person.COLUMN_ID, false)
-                .addOrder(Person.COLUMN_NAME, true)
+                .addOrder(PersonProperty.id.column, false)
+                .addOrder(PersonProperty.name.column, true)
                 .setLimit(10);
         return rawQuery(queryBuilder.generateSql(), queryBuilder.getValuesAsStringArray());
     }
@@ -46,25 +47,29 @@ public class PersonDaoImpl extends BaseDaoImpl<Person> {
         long now = System.currentTimeMillis();
         UpdateBuilder<Person> updateBuilder = updateBuilder()
                 .setWhere(where)
-                .addUpdateColumn(Person.COLUMN_BIRTH, now)
-                .addUpdateColumn(Person.COLUMN_ADDRESS, "address_" + now);
+                .addUpdateColumn(PersonProperty.birth.column, now)
+                .addUpdateColumn(PersonProperty.address.column, "address_" + now);
         rawExecute(updateBuilder.generateSql(), updateBuilder.getValues().toArray());
     }
 
     private Where getTestWhere() {
         return Where.and(
-//                Where.eq(Person.COLUMN_NAME, "wangjie"),
-                Where.like(Person.COLUMN_NAME, "%wangjie%"),
-                Where.lt(Person.COLUMN_ID, 200),
-//                Where.raw(Person.COLUMN_AGE + " > ? and " + Person.COLUMN_ADDRESS + " is not null", 8),
+//                Where.eq(PersonProperty.name.column, "wangjie"),
+                Where.like(PersonProperty.name.column, "%wangjie%"),
+                Where.lt(PersonProperty.id.column, 200),
+//                Where.raw(PersonProperty.age.column + " > ? and " + PersonProperty.address.column + " is not null", 8),
                 Where.or(
-//                        Where.in(Person.COLUMN_AGE, 19, 29, 39),
-                        Where.between(Person.COLUMN_AGE, 19, 39),
-                        Where.isNull(Person.COLUMN_ADDRESS)
-                        ),
-                Where.eq(Person.COLUMN_TYPE_ID, 1)
+//                        Where.in(PersonProperty.age.column, 19, 29, 39),
+                        Where.between(PersonProperty.age.column, 19, 39),
+                        Where.isNull(PersonProperty.address.column)
+                ),
+                Where.eq(PersonProperty.typeId.column, 1)
         );
     }
 
+    public List<Person> findPersons() throws SQLException {
+        QueryBuilder queryBuilder = queryBuilder().addOrder(PersonProperty.id.column, false).setLimit(10);
+        return rawQuery(queryBuilder.generateSql(), queryBuilder.getValuesAsStringArray());
+    }
 
 }

@@ -15,7 +15,7 @@ public abstract class Statement<T> {
         this.tableConfig = tableConfig;
     }
 
-    public synchronized String getStatement() {
+    public String getStatement() {
         if (null == statement) {
             statement = initializeStatement();
         }

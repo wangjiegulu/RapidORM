@@ -12,7 +12,9 @@ import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
-import com.wangjie.rapidorm.core.model.ModelWithoutReflection;
+import com.wangjie.rapidorm.core.generate.withoutreflection.IModelProperty;
+import com.wangjie.rapidorm.core.generate.withoutreflection.ModelPropertyFactory;
+import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
 import java.lang.reflect.Field;
@@ -33,88 +35,81 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     protected Class<T> clazz;
     protected TableConfig<T> tableConfig;
+    private String insertStatement;
+    private String updateStatement;
+    private String deleteStatement;
+    private IModelProperty<T> iModelProperty;
 
     public BaseDaoImpl(Class<T> clazz) {
         this.clazz = clazz;
         this.tableConfig = DatabaseProcessor.getInstance().getTableConfig(clazz);
+        insertStatement = tableConfig.getInsertStatement().getStatement();
+        updateStatement = tableConfig.getUpdateStatement().getStatement();
+        deleteStatement = tableConfig.getDeleteStatement().getStatement();
+        if (tableConfig.isWithoutReflection()) {
+            iModelProperty = ModelPropertyFactory.getMapper(tableConfig.getPropertyClazz());
+        }
     }
 
     @Override
-    public int insert(@NonNull T model) throws SQLException {
-        SQLiteDatabase db = getDatabase();
-        int count = 0;
+    public void insert(@NonNull final T model) throws SQLException {
+        final SQLiteDatabase db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
-                count = executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
+                executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
-            db.beginTransaction();
-            try {
-                synchronized (LOCK) {
-                    count = executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
+            executeInTx(db, new RapidOrmFunc1() {
+                @Override
+                public void call() {
+                    executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
                 }
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
+            });
         }
-        return count;
     }
 
-    private int executeInsert(@NonNull T model, SQLiteDatabase db, List<ColumnConfig> insertColumnConfigs) throws SQLException {
-        String sql = tableConfig.getInsertStatement().getStatement();
-        if (0 == insertColumnConfigs.size()) {
-            Log.e(TAG, "insertColumns is null");
-            return 0;
-        }
-
+    private void executeInsert(@NonNull T model, SQLiteDatabase db, List<ColumnConfig> insertColumnConfigs) throws SQLException {
         Object[] args;
-        if (model instanceof ModelWithoutReflection) {
+        if (null != iModelProperty) {
             List<Object> argList = new ArrayList<>();
-            ((ModelWithoutReflection) model).bindInsertArgs(argList);
+//            args = new Object[insertColumnConfigs.size()];
+            iModelProperty.bindInsertArgs(model, argList);
             args = argList.toArray();
         } else {
             args = generateArgs(model, insertColumnConfigs).toArray();
         }
 
         if (RapidORMConfig.DEBUG)
-            Log.i(TAG, "executeInsert ==> sql: " + sql + " >> args: " + Arrays.toString(args));
+            Log.i(TAG, "executeInsert ==> sql: " + insertStatement + " >> args: " + Arrays.toString(args));
 
-        db.execSQL(sql, args);
-        return 1;
+        db.execSQL(insertStatement, args);
     }
 
     @Override
-    public int update(@NonNull T model) throws SQLException {
-        SQLiteDatabase db = getDatabase();
+    public void update(@NonNull final T model) throws SQLException {
+        final SQLiteDatabase db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
                 executeUpdate(model, db);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
-            db.beginTransaction();
-            try {
-                synchronized (LOCK) {
+            executeInTx(db, new RapidOrmFunc1() {
+                @Override
+                public void call() {
                     executeUpdate(model, db);
                 }
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
+            });
         }
-        return 0;
     }
 
-    private int executeUpdate(T model, SQLiteDatabase db) throws SQLException {
-        String sql = tableConfig.getUpdateStatement().getStatement();
+    private void executeUpdate(T model, SQLiteDatabase db) throws SQLException {
         Object[] args;
-        if (model instanceof ModelWithoutReflection) {
+        if (null != iModelProperty) {
             List<Object> argList = new ArrayList<>();
-            ModelWithoutReflection mwr = ((ModelWithoutReflection) model);
-            mwr.bindUpdateArgs(argList);
-            mwr.bindPkArgs(argList);
+            iModelProperty.bindUpdateArgs(model, argList);
+            iModelProperty.bindPkArgs(model, argList);
             args = argList.toArray();
         } else {
             List<Object> argList = generateArgs(model, tableConfig.getNoPkColumnConfigs());
@@ -123,52 +118,49 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
 
         if (RapidORMConfig.DEBUG)
-            Log.i(TAG, "executeUpdate ==> sql: " + sql + " >> args: " + Arrays.toString(args));
+            Log.i(TAG, "executeUpdate ==> sql: " + updateStatement + " >> args: " + Arrays.toString(args));
 
-        db.execSQL(sql, args);
-        return 1;
-
+        db.execSQL(updateStatement, args);
     }
 
     @Override
-    public int delete(@NonNull T model) throws SQLException {
-        SQLiteDatabase db = getDatabase();
-        int count = 0;
+    public void delete(@NonNull final T model) throws SQLException {
+        final SQLiteDatabase db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
-                count = executeDelete(model, db);
+                executeDelete(model, db);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
-            db.beginTransaction();
-            try {
-                synchronized (LOCK) {
-                    count = executeDelete(model, db);
+            executeInTx(db, new RapidOrmFunc1() {
+                @Override
+                public void call() {
+                    executeDelete(model, db);
                 }
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
+            });
         }
-        return count;
     }
 
-    private int executeDelete(@NonNull T model, SQLiteDatabase db) throws SQLException {
-        String sql = tableConfig.getDeleteStatement().getStatement();
+    private void executeDelete(@NonNull T model, SQLiteDatabase db) throws SQLException {
         List<ColumnConfig> pkColumnConfigs = tableConfig.getPkColumnConfigs();
         if (null == pkColumnConfigs || 0 == pkColumnConfigs.size()) {
             Log.e(TAG, "The table [" + tableConfig.getTableName() + "] has no primary key column!");
-            return 0;
+            return;
         }
 
-        Object[] args = generateArgs(model, pkColumnConfigs).toArray();
+        Object[] args;
+        if (null != iModelProperty) {
+            List<Object> argList = new ArrayList<>();
+            iModelProperty.bindPkArgs(model, argList);
+            args = argList.toArray();
+        } else {
+            args = generateArgs(model, pkColumnConfigs).toArray();
+        }
 
         if (RapidORMConfig.DEBUG)
-            Log.i(TAG, "executeDelete ==> sql: " + sql + " >> args: " + Arrays.toString(args));
+            Log.i(TAG, "executeDelete ==> sql: " + deleteStatement + " >> args: " + Arrays.toString(args));
 
-        db.execSQL(sql, args);
-        // todo: query change count
-        return 1;
+        db.execSQL(deleteStatement, args);
     }
 
     private List<Object> generateArgs(@NonNull T model, List<ColumnConfig> columnConfigs) {
@@ -177,7 +169,13 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             Field field = columnConfig.getField();
             field.setAccessible(true);
             try {
-                args.add(field.get(model));
+                Object value;
+                if (isBoolean(field.getType())) {
+                    value = ((Boolean) field.get(model)) ? 1 : 0;
+                } else {
+                    value = field.get(model);
+                }
+                args.add(value);
             } catch (IllegalAccessException e) {
                 Log.e(TAG, "", e);
                 args.add(null);
@@ -186,28 +184,26 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         return args;
     }
 
+    private boolean isBoolean(Class<?> type) {
+        return boolean.class == type || Boolean.class == type;
+    }
+
     @Override
-    public int deleteAll() throws SQLException {
-        SQLiteDatabase db = getDatabase();
-        int count = 0;
+    public void deleteAll() throws SQLException {
+        final SQLiteDatabase db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
                 executeDeleteAll(db);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
-            db.beginTransaction();
-            try {
-                synchronized (LOCK) {
+            executeInTx(db, new RapidOrmFunc1() {
+                @Override
+                public void call() {
                     executeDeleteAll(db);
                 }
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
+            });
         }
-        // todo: query change count
-        return count;
     }
 
     private void executeDeleteAll(SQLiteDatabase db) {
@@ -218,9 +214,8 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @Override
-    public int insertOrUpdate(@NonNull T model) throws SQLException {
-        // todo: insert Or Update
-        return 0;
+    public void insertOrReplace(@NonNull T model) throws SQLException {
+        throw new RapidORMRuntimeException("InsertOrReplace Not Support Yet!");
     }
 
     @Override
@@ -241,14 +236,19 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         try {
             cursor = db.rawQuery(sql, selectionArgs);
             while (cursor.moveToNext()) {
-                T obj = clazz.newInstance();
-                List<ColumnConfig> allColumnConfigs = tableConfig.getAllColumnConfigs();
-                for (ColumnConfig columnConfig : allColumnConfigs) {
-                    Field field = columnConfig.getField();
-                    field.setAccessible(true);
-                    int index = cursor.getColumnIndex(columnConfig.getColumnName());
-                    if (-1 != index) {
-                        field.set(obj, getObject(cursor, field.getType(), index));
+                T obj;
+                if (null != iModelProperty) {
+                    obj = iModelProperty.parseFromCursor(cursor);
+                } else {
+                    obj = clazz.newInstance();
+                    List<ColumnConfig> allColumnConfigs = tableConfig.getAllColumnConfigs();
+                    for (ColumnConfig columnConfig : allColumnConfigs) {
+                        Field field = columnConfig.getField();
+                        field.setAccessible(true);
+                        int index = cursor.getColumnIndex(columnConfig.getColumnName());
+                        if (-1 != index) {
+                            field.set(obj, getObject(cursor, field.getType(), index));
+                        }
                     }
                 }
                 resultList.add(obj);
@@ -262,25 +262,21 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @Override
-    public int rawExecute(String sql, Object[] bindArgs) throws SQLException {
-        SQLiteDatabase db = getDatabase();
+    public void rawExecute(final String sql, final Object[] bindArgs) throws SQLException {
+        final SQLiteDatabase db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
                 rawExecute(db, sql, bindArgs);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
-            db.beginTransaction();
-            try {
-                synchronized (LOCK) {
+            executeInTx(db, new RapidOrmFunc1() {
+                @Override
+                public void call() {
                     rawExecute(db, sql, bindArgs);
                 }
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-            }
+            });
         }
-        return 0;
     }
 
     private void rawExecute(SQLiteDatabase db, String sql, Object[] bindArgs) throws SQLException {
@@ -294,6 +290,10 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
+    /**
+     * ********************* execute in tx *************************
+     */
+
     @SafeVarargs
     @Override
     public final void insertInTx(T... models) throws SQLException {
@@ -303,7 +303,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     @Override
     public void insertInTx(final Iterable<T> models) throws SQLException {
         final SQLiteDatabase db = getDatabase();
-        executeInTx(new RapidOrmFunc1() {
+        executeInTx(db, new RapidOrmFunc1() {
             @Override
             public void call() {
                 List<ColumnConfig> insertColumnConfigs = SqlUtil.getInsertColumnConfigs(tableConfig);
@@ -323,7 +323,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     @Override
     public void updateInTx(final Iterable<T> models) throws SQLException {
         final SQLiteDatabase db = getDatabase();
-        executeInTx(new RapidOrmFunc1() {
+        executeInTx(db, new RapidOrmFunc1() {
             @Override
             public void call() {
                 for (T model : models) {
@@ -342,7 +342,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     @Override
     public void deleteInTx(final Iterable<T> models) throws SQLException {
         final SQLiteDatabase db = getDatabase();
-        executeInTx(new RapidOrmFunc1() {
+        executeInTx(db, new RapidOrmFunc1() {
             @Override
             public void call() {
                 for (T model : models) {
@@ -353,19 +353,16 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @Override
-    public void executeInTx(RapidOrmFunc1 func1) throws SQLException {
+    public void executeInTx(SQLiteDatabase db, RapidOrmFunc1 func1) throws SQLException {
         if (null == func1) {
             return;
         }
-        SQLiteDatabase db = getDatabase();
         db.beginTransaction();
         try {
             synchronized (LOCK) {
                 func1.call();
             }
             db.setTransactionSuccessful();
-        } catch (SQLException e) {
-            Log.e(TAG, "", e);
         } finally {
             db.endTransaction();
         }
@@ -413,6 +410,8 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             return cursor.isNull(index) ? null : cursor.getFloat(index);
         } else if (Blob.class == fieldType) {
             return cursor.isNull(index) ? null : cursor.getBlob(index);
+        } else if (isBoolean(fieldType)) {
+            return cursor.isNull(index) ? null : (cursor.getInt(index) == 1);
         }
         return null;
     }

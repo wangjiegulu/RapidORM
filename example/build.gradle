@@ -38,6 +38,9 @@ dependencies {
     compile 'com.github.wangjiegulu:AndroidBucket:1.0.4'
     compile 'com.github.wangjiegulu:AndroidInject:1.0.6'
 
-
     compile project(':library')
+
+
+
+
 }

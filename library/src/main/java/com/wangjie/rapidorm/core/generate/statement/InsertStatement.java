@@ -21,7 +21,8 @@ public class InsertStatement<T> extends Statement<T> {
     protected String initializeStatement() {
         List<ColumnConfig> insertColumns = getInsertColumnConfigs(tableConfig);
         StringBuilder builder = new StringBuilder(" INSERT INTO ");
-        builder.append(tableConfig.getTableName()).append(" (");
+        SqlUtil.formatName(builder, tableConfig.getTableName());
+        builder.append(" (");
 
         CollectionJoiner.join(insertColumns, ",", builder, new CollectionJoiner.OnCollectionJoiner<ColumnConfig>() {
             @Override

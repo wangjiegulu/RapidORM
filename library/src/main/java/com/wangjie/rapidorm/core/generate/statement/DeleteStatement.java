@@ -20,17 +20,18 @@ public class DeleteStatement<T> extends Statement<T> {
 
     @Override
     protected String initializeStatement() {
-        final String tableName = tableConfig.getTableName();
+        String tableName = tableConfig.getTableName();
+        final String alias = tableName;
         StringBuilder builder = new StringBuilder("DELETE FROM ");
         List<ColumnConfig> pkColumns = tableConfig.getPkColumnConfigs();
-        builder.append(tableName);
+        SqlUtil.formatName(builder, tableName);
         if (pkColumns != null && pkColumns.size() > 0) {
             builder.append(" WHERE ");
 
             CollectionJoiner.join(pkColumns, " AND ", builder, new CollectionJoiner.OnCollectionJoiner<ColumnConfig>() {
                 @Override
                 public void joinContent(StringBuilder builder, ColumnConfig obj) {
-                    builder.append(tableName).append(".");
+                    builder.append(alias).append(".");
                     SqlUtil.formatName(builder, obj.getColumnName()).append("=?");
                 }
             });

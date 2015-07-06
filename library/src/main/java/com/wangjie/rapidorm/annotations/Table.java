@@ -16,4 +16,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface Table {
     String name() default Constants.AnnotationNotSetValue.TABLE_NAME;
+    Class propertyClazz() default Object.class;
 }

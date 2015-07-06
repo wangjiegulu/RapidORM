@@ -19,6 +19,8 @@ public class ColumnConfig {
     private boolean uniqueCombo;
     private boolean index;
 
+    private int ordinals;
+
 //    private int kpSequence;
 //    private int noKpSequence;
 
@@ -92,5 +94,13 @@ public class ColumnConfig {
 
     public void setField(Field field) {
         this.field = field;
+    }
+
+    public void setOrdinals(int ordinals) {
+        this.ordinals = ordinals;
+    }
+
+    public int getOrdinals() {
+        return ordinals;
     }
 }

@@ -18,10 +18,11 @@ public class UpdateStatement<T> extends Statement<T> {
 
     @Override
     protected String initializeStatement() {
-        final String tableName = tableConfig.getTableName();
+        String tableName = tableConfig.getTableName();
+        final String alias = tableName;
         StringBuilder builder = new StringBuilder("UPDATE ");
-        builder.append(tableName).append(" SET ");
-//        appendColumnsEqualPlaceholders(builder, tableConfig.getNoPkColumnConfigs());
+        SqlUtil.formatName(builder, tableName)
+                .append(" SET ");
 
         CollectionJoiner.join(tableConfig.getNoPkColumnConfigs(), ",", builder, new CollectionJoiner.OnCollectionJoiner<ColumnConfig>() {
 
@@ -32,13 +33,12 @@ public class UpdateStatement<T> extends Statement<T> {
         });
 
         builder.append(" WHERE ");
-//        SqlUtil.appendColumnsEqValue(builder, tableName, " AND ", tableConfig.getPkColumnConfigs());
 
         CollectionJoiner.join(tableConfig.getPkColumnConfigs(), " AND ", builder, new CollectionJoiner.OnCollectionJoiner<ColumnConfig>() {
 
             @Override
             public void joinContent(StringBuilder builder, ColumnConfig obj) {
-                builder.append(tableName).append(".");
+                builder.append(alias).append(".");
                 SqlUtil.formatName(builder, obj.getColumnName()).append("=?");
             }
         });
