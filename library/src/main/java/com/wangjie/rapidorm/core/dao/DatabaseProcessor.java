@@ -7,6 +7,7 @@ import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Author: wangjie
@@ -32,6 +33,21 @@ public class DatabaseProcessor {
             throw new RapidORMRuntimeException("tableConfigMapper not initialized, had you invoke super() method in the sub class of RapidORMConnection ?");
         }
         db.execSQL(tableConfig.getTableCreateStatement().buildStatement(ifNotExists).toString());
+    }
+
+    public <T> void dropTable(SQLiteDatabase db, Class<T> clazz) {
+        TableConfig<T> tableConfig = tableConfigMapper.get(clazz);
+        if (null == tableConfig) {
+            return;
+        }
+        db.execSQL("drop table " + tableConfig.getTableName());
+    }
+
+    public void dropAllTable(SQLiteDatabase db) {
+        Set<Class<?>> entrySet = tableConfigMapper.keySet();
+        for (Class<?> anEntrySet : entrySet) {
+            dropTable(db, anEntrySet);
+        }
     }
 
 
@@ -77,5 +93,9 @@ public class DatabaseProcessor {
     @SuppressWarnings("unchecked")
     public <T> TableConfig<T> getTableConfig(Class<T> clazz) {
         return (TableConfig<T>) tableConfigMapper.get(clazz);
+    }
+
+    public List<Class<?>> getAllTableClass() {
+        return allTableClass;
     }
 }

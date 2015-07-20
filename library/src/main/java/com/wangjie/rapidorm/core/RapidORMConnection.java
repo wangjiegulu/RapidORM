@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public abstract class RapidORMConnection<T extends RapidORMDatabaseOpenHelper> {
     private static final String TAG = RapidORMConnection.class.getSimpleName();
-    private List<Class<?>> allTableClass;
+    protected List<Class<?>> allTableClass;
 
     private HashMap<Class<?>, BaseDao<?>> daoMapper = new HashMap<>();
 
