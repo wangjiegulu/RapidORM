@@ -6,5 +6,5 @@ package com.wangjie.rapidorm.util.func;
  * Date: 7/1/15.
  */
 public interface RapidOrmFunc1 {
-    void call();
+    void call() throws Exception;
 }

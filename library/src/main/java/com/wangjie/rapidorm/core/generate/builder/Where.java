@@ -22,7 +22,14 @@ public class Where {
      * @return
      */
     public static Where eq(String column, Object value) {
-        return single(column, value, " = ");
+        Class clazz = value.getClass();
+        Object realValue;
+        if (boolean.class == clazz || Boolean.class == clazz) {
+            realValue = (boolean) value ? 1 : 0;
+        } else {
+            realValue = value;
+        }
+        return single(column, realValue, " = ");
     }
 
     /**

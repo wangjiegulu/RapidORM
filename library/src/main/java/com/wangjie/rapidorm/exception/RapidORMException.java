@@ -2,7 +2,6 @@ package com.wangjie.rapidorm.exception;
 
 
 import android.annotation.TargetApi;
-import android.database.SQLException;
 import android.os.Build;
 
 /**
@@ -10,7 +9,7 @@ import android.os.Build;
  * Email: tiantian.china.2@gmail.com
  * Date: 6/25/15.
  */
-public class RapidORMException extends SQLException {
+public class RapidORMException extends Exception {
     public RapidORMException() {
     }
 

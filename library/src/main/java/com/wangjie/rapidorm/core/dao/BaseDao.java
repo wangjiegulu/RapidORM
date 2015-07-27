@@ -1,6 +1,5 @@
 package com.wangjie.rapidorm.core.dao;
 
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
@@ -13,37 +12,39 @@ import java.util.List;
  */
 public interface BaseDao<T> {
 
-    void insert(T model) throws SQLException;
+    void insert(T model) throws Exception;
 
-    void update(T model) throws SQLException;
+    void update(T model) throws Exception;
 
-    void delete(T model) throws SQLException;
+    void delete(T model) throws Exception;
 
-    void deleteAll() throws SQLException;
+    void deleteAll() throws Exception;
 
-    void insertOrReplace(T model) throws SQLException;
+    void insertOrReplace(T model) throws Exception;
 
-    List<T> queryAll() throws SQLException;
+    List<T> queryAll() throws Exception;
 
-    List<T> rawQuery(String sql, String[] selectionArgs) throws SQLException;
+    List<T> rawQuery(String sql, String[] selectionArgs) throws Exception;
 
-    void rawExecute(String sql, Object[] bindArgs) throws SQLException;
+    void rawExecute(String sql, Object[] bindArgs) throws Exception;
 
     /**
      * ********************* execute in tx *************************
      */
-    void insertInTx(T... models) throws SQLException;
+    void insertInTx(T... models) throws Exception;
 
-    void insertInTx(Iterable<T> models) throws SQLException;
+    void insertInTx(Iterable<T> models) throws Exception;
 
-    void updateInTx(T... models) throws SQLException;
+    void updateInTx(T... models) throws Exception;
 
-    void updateInTx(Iterable<T> models) throws SQLException;
+    void updateInTx(Iterable<T> models) throws Exception;
 
-    void deleteInTx(T... models) throws SQLException;
+    void deleteInTx(T... models) throws Exception;
 
-    void deleteInTx(Iterable<T> models) throws SQLException;
+    void deleteInTx(Iterable<T> models) throws Exception;
 
-    void executeInTx(SQLiteDatabase db, RapidOrmFunc1 func1) throws SQLException;
+    void executeInTx(SQLiteDatabase db, RapidOrmFunc1 func1) throws Exception;
+
+    void executeInTx(RapidOrmFunc1 func1) throws Exception;
 
 }
