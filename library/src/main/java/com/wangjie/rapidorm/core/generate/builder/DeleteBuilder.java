@@ -1,6 +1,7 @@
 package com.wangjie.rapidorm.core.generate.builder;
 
 import com.wangjie.rapidorm.core.config.TableConfig;
+import com.wangjie.rapidorm.core.dao.BaseDao;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 
@@ -34,6 +35,10 @@ public class DeleteBuilder<T> extends RapidBuilder {
         return values;
     }
 
+    public Object[] getValuesAsObjectArray() {
+        return values.toArray();
+    }
+
     public TableConfig<T> getTableConfig() {
         return tableConfig;
     }
@@ -56,5 +61,9 @@ public class DeleteBuilder<T> extends RapidBuilder {
             values = where.getValues();
         }
         return sql.toString();
+    }
+
+    public void delete(BaseDao<T> baseDao)throws Exception{
+        baseDao.rawExecute(generateSql(), getValuesAsObjectArray());
     }
 }

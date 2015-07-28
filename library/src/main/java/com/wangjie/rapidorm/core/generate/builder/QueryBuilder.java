@@ -1,6 +1,7 @@
 package com.wangjie.rapidorm.core.generate.builder;
 
 import com.wangjie.rapidorm.core.config.TableConfig;
+import com.wangjie.rapidorm.core.dao.BaseDao;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.collection.CollectionJoiner;
@@ -122,5 +123,8 @@ public class QueryBuilder<T> extends RapidBuilder {
         return sql.toString();
     }
 
+    public List<T> query(BaseDao<T> baseDao) throws Exception {
+        return baseDao.rawQuery(generateSql(), getValuesAsStringArray());
+    }
 
 }

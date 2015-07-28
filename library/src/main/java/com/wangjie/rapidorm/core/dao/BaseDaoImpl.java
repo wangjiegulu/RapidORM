@@ -61,7 +61,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
-                public void call() throws Exception{
+                public void call() throws Exception {
                     executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
                 }
             });
@@ -96,7 +96,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
-                public void call() throws Exception{
+                public void call() throws Exception {
                     executeUpdate(model, db);
                 }
             });
@@ -133,7 +133,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
-                public void call() throws Exception{
+                public void call() throws Exception {
                     executeDelete(model, db);
                 }
             });
@@ -170,7 +170,8 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             try {
                 Object value;
                 if (isBoolean(field.getType())) {
-                    value = ((Boolean) field.get(model)) ? 1 : 0;
+                    Boolean booleanValue = ((Boolean) field.get(model));
+                    value = null == booleanValue ? null : (booleanValue ? 1 : 0);
                 } else {
                     value = field.get(model);
                 }
@@ -271,7 +272,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
-                public void call() throws Exception{
+                public void call() throws Exception {
                     rawExecute(db, sql, bindArgs);
                 }
             });
@@ -304,7 +305,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         final SQLiteDatabase db = getDatabase();
         executeInTx(db, new RapidOrmFunc1() {
             @Override
-            public void call() throws Exception{
+            public void call() throws Exception {
                 List<ColumnConfig> insertColumnConfigs = SqlUtil.getInsertColumnConfigs(tableConfig);
                 for (T model : models) {
                     executeInsert(model, db, insertColumnConfigs);
@@ -324,8 +325,8 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         final SQLiteDatabase db = getDatabase();
         executeInTx(db, new RapidOrmFunc1() {
             @Override
-            public void call() throws Exception{
-                for (T model : models){
+            public void call() throws Exception {
+                for (T model : models) {
                     executeUpdate(model, db);
                 }
             }
@@ -343,7 +344,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         final SQLiteDatabase db = getDatabase();
         executeInTx(db, new RapidOrmFunc1() {
             @Override
-            public void call() throws Exception{
+            public void call() throws Exception {
                 for (T model : models) {
                     executeDelete(model, db);
                 }
