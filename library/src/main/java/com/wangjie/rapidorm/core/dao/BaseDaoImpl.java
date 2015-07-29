@@ -29,15 +29,15 @@ import java.util.List;
  */
 public class BaseDaoImpl<T> implements BaseDao<T> {
     private static final String TAG = BaseDaoImpl.class.getSimpleName();
-    private final byte[] LOCK = new byte[0];
+    protected final byte[] LOCK = new byte[0];
 //    private final ReadWriteLock LOCK = new ReentrantReadWriteLock();
 
-    protected Class<T> clazz;
+    final protected Class<T> clazz;
     protected TableConfig<T> tableConfig;
-    private String insertStatement;
-    private String updateStatement;
-    private String deleteStatement;
-    private IModelProperty<T> iModelProperty;
+    final protected String insertStatement;
+    final protected String updateStatement;
+    final protected String deleteStatement;
+    protected IModelProperty<T> iModelProperty;
 
     public BaseDaoImpl(Class<T> clazz) {
         this.clazz = clazz;
@@ -168,14 +168,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             Field field = columnConfig.getField();
             field.setAccessible(true);
             try {
-                Object value;
-                if (isBoolean(field.getType())) {
-                    Boolean booleanValue = ((Boolean) field.get(model));
-                    value = null == booleanValue ? null : (booleanValue ? 1 : 0);
-                } else {
-                    value = field.get(model);
-                }
-                args.add(value);
+                args.add(getFieldValue(model, field));
             } catch (IllegalAccessException e) {
                 Log.e(TAG, "", e);
                 args.add(null);
@@ -184,7 +177,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         return args;
     }
 
-    private boolean isBoolean(Class<?> type) {
+    protected boolean isBoolean(Class<?> type) {
         return boolean.class == type || Boolean.class == type;
     }
 
@@ -387,6 +380,17 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         if (null != cursor) {
             cursor.close();
         }
+    }
+
+    protected Object getFieldValue(T model, Field field) throws IllegalAccessException {
+        Object value;
+        if (isBoolean(field.getType())) {
+            Boolean booleanValue = ((Boolean) field.get(model));
+            value = null == booleanValue ? null : (booleanValue ? 1 : 0);
+        } else {
+            value = field.get(model);
+        }
+        return value;
     }
 
     /**
