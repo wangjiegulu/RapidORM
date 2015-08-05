@@ -49,5 +49,18 @@ public class SqlUtil {
         return builder.append("`").append(name).append("`");
     }
 
+    public static boolean isBoolean(Class<?> fieldType) {
+        return boolean.class == fieldType || Boolean.class == fieldType;
+    }
+
+    public static Object convertValue(Object fieldValue){
+        if(null == fieldValue){
+            return null;
+        }
+        if(isBoolean(fieldValue.getClass())){
+            return ((Boolean)fieldValue) ? 1 : 0;
+        }
+        return fieldValue;
+    }
 
 }

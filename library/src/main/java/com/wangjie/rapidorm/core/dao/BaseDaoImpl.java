@@ -177,10 +177,6 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         return args;
     }
 
-    protected boolean isBoolean(Class<?> type) {
-        return boolean.class == type || Boolean.class == type;
-    }
-
     @Override
     public void deleteAll() throws Exception {
         final SQLiteDatabase db = getDatabase();
@@ -347,6 +343,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void executeInTx(SQLiteDatabase db, RapidOrmFunc1 func1) throws Exception {
+        if(null == db){
+            db = getDatabase();
+        }
         if (null == func1) {
             return;
         }
@@ -363,7 +362,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void executeInTx(RapidOrmFunc1 func1) throws Exception {
-        executeInTx(getDatabase(), func1);
+        executeInTx(null, func1);
     }
 
 
@@ -383,14 +382,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     protected Object getFieldValue(T model, Field field) throws IllegalAccessException {
-        Object value;
-        if (isBoolean(field.getType())) {
-            Boolean booleanValue = ((Boolean) field.get(model));
-            value = null == booleanValue ? null : (booleanValue ? 1 : 0);
-        } else {
-            value = field.get(model);
-        }
-        return value;
+        return SqlUtil.convertValue(field.get(model));
     }
 
     /**
@@ -419,7 +411,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             return cursor.isNull(index) ? null : cursor.getFloat(index);
         } else if (Blob.class == fieldType) {
             return cursor.isNull(index) ? null : cursor.getBlob(index);
-        } else if (isBoolean(fieldType)) {
+        } else if (SqlUtil.isBoolean(fieldType)) {
             return cursor.isNull(index) ? null : (cursor.getInt(index) == 1);
         }
         return null;

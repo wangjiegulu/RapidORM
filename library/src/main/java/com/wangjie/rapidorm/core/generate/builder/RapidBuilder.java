@@ -22,4 +22,6 @@ public abstract class RapidBuilder {
         return array;
     }
 
+
+
 }

@@ -53,7 +53,7 @@ public class UpdateBuilder<T> extends RapidBuilder {
     }
 
     public UpdateBuilder<T> addUpdateColumn(String column, Object value) {
-        updateCases.add(new UpdateCase(column, value));
+        updateCases.add(new UpdateCase(column, SqlUtil.convertValue(value)));
         return this;
     }
 
