@@ -28,18 +28,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> 258482174046bbed3a166249c210132facda07ba
     lintOptions {
         checkReleaseBuilds false
         // Or, if you prefer, you can continue to check for errors in release builds,
         // but continue the build even when errors are found:but continue the build even when errors are found:
         abortOnError false
     }
-<<<<<<< HEAD
-=======
 
     packagingOptions {
         exclude 'LICENSE.txt'
@@ -55,7 +50,6 @@ android {
         exclude 'META-INF/dependencies.txt'
     }
 
->>>>>>> 258482174046bbed3a166249c210132facda07ba
 }
 
 dependencies {
