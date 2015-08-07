@@ -127,4 +127,9 @@ public class QueryBuilder<T> extends RapidBuilder {
         return baseDao.rawQuery(generateSql(), getValuesAsStringArray());
     }
 
+    public T queryFirst(BaseDao<T> baseDao) throws Exception {
+        List<T> list = baseDao.rawQuery(generateSql(), getValuesAsStringArray());
+        return null == list || 0 == list.size() ? null : list.get(0);
+    }
+
 }
