@@ -70,7 +70,6 @@ public abstract class RapidORMConnection<T extends RapidORMDatabaseOpenHelper> {
     }
 
     private void initial() {
-        daoMapper = new HashMap<>();
         allTableClass = registerAllTableClass();
         DatabaseProcessor.getInstance().initializeAllTableClass(allTableClass);
     }
@@ -82,6 +81,7 @@ public abstract class RapidORMConnection<T extends RapidORMDatabaseOpenHelper> {
         if (databaseName.equals(this.databaseName)) {
             return;
         }
+        daoMapper = new HashMap<>();
         this.databaseName = databaseName;
         rapidORMDatabaseOpenHelper = getRapidORMDatabaseOpenHelper(databaseName);
         DatabaseProcessor.getInstance().resetRapidORMDatabaseOpenHelper(rapidORMDatabaseOpenHelper);

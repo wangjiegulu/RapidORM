@@ -65,6 +65,7 @@ public class DatabaseProcessor {
      */
     @SuppressWarnings("unchecked")
     public void initializeAllTableClass(List<Class<?>> allTableClass) {
+        tableConfigMapper.clear();
         this.allTableClass = allTableClass;
         for (Class<?> clazz : allTableClass) {
             tableConfigMapper.put(clazz, new TableConfig(clazz));
@@ -73,6 +74,7 @@ public class DatabaseProcessor {
 
     public void resetRapidORMDatabaseOpenHelper(RapidORMDatabaseOpenHelper rapidORMDatabaseOpenHelper) {
         this.rapidORMDatabaseOpenHelper = rapidORMDatabaseOpenHelper;
+        this.db = null;
     }
 
     public void initializeDatabase(SQLiteDatabase db) {
