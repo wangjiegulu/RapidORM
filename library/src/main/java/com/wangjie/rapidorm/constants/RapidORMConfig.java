@@ -7,4 +7,7 @@ package com.wangjie.rapidorm.constants;
  */
 public class RapidORMConfig {
     public static boolean DEBUG = true;
+
+    
+
 }

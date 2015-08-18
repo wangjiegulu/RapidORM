@@ -1,6 +1,6 @@
 package com.wangjie.rapidorm.core.dao;
 
-import android.database.sqlite.SQLiteDatabase;
+import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public interface BaseDao<T> {
 
     void deleteInTx(Iterable<T> models) throws Exception;
 
-    void executeInTx(SQLiteDatabase db, RapidOrmFunc1 func1) throws Exception;
+    void executeInTx(RapidORMSQLiteDatabaseDelegate db, RapidOrmFunc1 func1) throws Exception;
 
     void executeInTx(RapidOrmFunc1 func1) throws Exception;
 

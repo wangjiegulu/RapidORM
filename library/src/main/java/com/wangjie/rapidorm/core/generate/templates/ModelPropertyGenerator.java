@@ -60,7 +60,7 @@ public class ModelPropertyGenerator {
             "\n" +
             "    @Override\n" +
             "    public void bindUpdateArgs(${clazzSimpleName} model, List<Object> updateArgs) {\n" +
-            "        <#list insertArgs as ia>\n" +
+            "        <#list updateArgs as ia>\n" +
             "        ${ia.argsType} ${ia.argsName} = model.${ia.getOrIsMethod}();\n" +
             "        updateArgs.add(null == ${ia.argsName} ? null : ${ia.argsName}${ia.booleanCase});\n" +
             "\n" +
@@ -69,7 +69,7 @@ public class ModelPropertyGenerator {
             "\n" +
             "    @Override\n" +
             "    public void bindPkArgs(${clazzSimpleName} model, List<Object> pkArgs) {\n" +
-            "        <#list insertArgs as ia>\n" +
+            "        <#list pkArgs as ia>\n" +
             "        ${ia.argsType} ${ia.argsName} = model.${ia.getOrIsMethod}();\n" +
             "        pkArgs.add(null == ${ia.argsName} ? null : ${ia.argsName}${ia.booleanCase});\n" +
             "\n" +

@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import com.wangjie.rapidorm.core.dao.BaseDao;
 import com.wangjie.rapidorm.core.dao.DatabaseProcessor;
+import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDatabaseOpenHelperDelegate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Email: tiantian.china.2@gmail.com
  * Date: 6/25/15.
  */
-public abstract class RapidORMConnection<T extends RapidORMDatabaseOpenHelper> {
+public abstract class RapidORMConnection<T extends RapidORMDatabaseOpenHelperDelegate> {
     private static final String TAG = RapidORMConnection.class.getSimpleName();
     protected List<Class<?>> allTableClass;
 
