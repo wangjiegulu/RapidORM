@@ -1,6 +1,5 @@
 package com.wangjie.rapidorm.example;
 
-import android.database.SQLException;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -83,7 +82,7 @@ public class MainActivity extends BaseActivity {
     private void deleteByBuilder() {
         try {
             DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).deletePerson();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Log.e(TAG, "", e);
         }
     }
@@ -91,7 +90,7 @@ public class MainActivity extends BaseActivity {
     private void updateByBuilder() {
         try {
             DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).updatePerson();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Log.e(TAG, "", e);
         }
     }
@@ -100,7 +99,7 @@ public class MainActivity extends BaseActivity {
         try {
             List<Person> personList = DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).findPersonsByWhere();
             dataListTv.setText("query by builder" + personList.toString());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Log.e(TAG, "", e);
         }
     }
@@ -108,7 +107,7 @@ public class MainActivity extends BaseActivity {
     private void deleteAll() {
         try {
             DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).deleteAll();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Log.e(TAG, "", e);
         }
     }
@@ -130,7 +129,7 @@ public class MainActivity extends BaseActivity {
                 long start = System.currentTimeMillis();
                 try {
                     DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).insertInTx(persons);
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     Log.e(TAG, "", e);
                 }
                 Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start));
@@ -158,7 +157,7 @@ public class MainActivity extends BaseActivity {
 //                for(Person person : persons){
 //                    try {
 //                        DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).executeInsert(person, DatabaseProcessor.getInstance().getDb(), SqlUtil.getInsertColumnConfigs(DatabaseProcessor.getInstance().getTableConfig(Person.class)));
-//                    } catch (SQLException e) {
+//                    } catch (Exception e) {
 //                        Log.e(TAG, "", e);
 //                    }
 //                }
@@ -172,7 +171,7 @@ public class MainActivity extends BaseActivity {
     private void insert() {
         try {
             DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).insert(getPerson());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Log.e(TAG, "", e);
         }
     }
@@ -186,7 +185,7 @@ public class MainActivity extends BaseActivity {
         p.setStudent(false);
         try {
             DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).update(p);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -198,7 +197,7 @@ public class MainActivity extends BaseActivity {
         p.setTypeId(1);
         try {
             DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).delete(p);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -219,7 +218,7 @@ public class MainActivity extends BaseActivity {
         try {
             List<Person> personList = DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).findPersons();
             dataListTv.setText("last 10 datas: " + personList.toString());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Log.e(TAG, "", e);
         }
 

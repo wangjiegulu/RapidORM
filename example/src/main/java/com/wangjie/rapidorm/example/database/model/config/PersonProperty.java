@@ -54,12 +54,6 @@ public class PersonProperty implements IModelProperty<Person> {
 
     @Override
     public void bindUpdateArgs(Person model, List<Object> updateArgs) {
-        Integer id = model.getId();
-        updateArgs.add(null == id ? null : id);
-
-        Integer typeId = model.getTypeId();
-        updateArgs.add(null == typeId ? null : typeId);
-
         String name = model.getName();
         updateArgs.add(null == name ? null : name);
 
@@ -84,21 +78,6 @@ public class PersonProperty implements IModelProperty<Person> {
 
         Integer typeId = model.getTypeId();
         pkArgs.add(null == typeId ? null : typeId);
-
-        String name = model.getName();
-        pkArgs.add(null == name ? null : name);
-
-        Integer age = model.getAge();
-        pkArgs.add(null == age ? null : age);
-
-        String address = model.getAddress();
-        pkArgs.add(null == address ? null : address);
-
-        Long birth = model.getBirth();
-        pkArgs.add(null == birth ? null : birth);
-
-        Boolean student = model.isStudent();
-        pkArgs.add(null == student ? null : student ? 1 : 0);
 
     }
 

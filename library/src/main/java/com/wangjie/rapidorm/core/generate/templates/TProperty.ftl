@@ -34,7 +34,7 @@ public class ${clazzPropertyName} implements IModelProperty<${clazzSimpleName}> 
 
     @Override
     public void bindUpdateArgs(${clazzSimpleName} model, List<Object> updateArgs) {
-        <#list insertArgs as ia>
+        <#list updateArgs as ia>
         ${ia.argsType} ${ia.argsName} = model.${ia.getOrIsMethod}();
         updateArgs.add(null == ${ia.argsName} ? null : ${ia.argsName}${ia.booleanCase});
 
@@ -43,7 +43,7 @@ public class ${clazzPropertyName} implements IModelProperty<${clazzSimpleName}> 
 
     @Override
     public void bindPkArgs(${clazzSimpleName} model, List<Object> pkArgs) {
-        <#list insertArgs as ia>
+        <#list pkArgs as ia>
         ${ia.argsType} ${ia.argsName} = model.${ia.getOrIsMethod}();
         pkArgs.add(null == ${ia.argsName} ? null : ${ia.argsName}${ia.booleanCase});
 

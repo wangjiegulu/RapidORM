@@ -1,6 +1,5 @@
 package com.wangjie.rapidorm.example.database.dao;
 
-import android.database.SQLException;
 import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
@@ -20,7 +19,7 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
         super(Person.class);
     }
 
-    public List<Person> findPersonsByWhere() throws SQLException {
+    public List<Person> findPersonsByWhere() throws Exception {
         Where where = getTestWhere();
 
         QueryBuilder<Person> queryBuilder = queryBuilder()
@@ -33,7 +32,7 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
         return rawQuery(queryBuilder.generateSql(), queryBuilder.getValuesAsStringArray());
     }
 
-    public void deletePerson() throws SQLException {
+    public void deletePerson() throws Exception {
         Where where = getTestWhere();
 
         DeleteBuilder<Person> deleteBuilder = deleteBuilder()
@@ -41,7 +40,7 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
         rawExecute(deleteBuilder.generateSql(), deleteBuilder.getValues().toArray());
     }
 
-    public void updatePerson() throws SQLException {
+    public void updatePerson() throws Exception {
         Where where = getTestWhere();
 
         long now = System.currentTimeMillis();
@@ -67,7 +66,7 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
         );
     }
 
-    public List<Person> findPersons() throws SQLException {
+    public List<Person> findPersons() throws Exception {
         QueryBuilder queryBuilder = queryBuilder().addOrder(PersonProperty.id.column, false).setLimit(10);
         return rawQuery(queryBuilder.generateSql(), queryBuilder.getValuesAsStringArray());
     }

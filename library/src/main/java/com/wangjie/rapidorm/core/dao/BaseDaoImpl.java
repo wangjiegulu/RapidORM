@@ -1,7 +1,6 @@
 package com.wangjie.rapidorm.core.dao;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
@@ -13,6 +12,7 @@ import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.core.generate.withoutreflection.IModelProperty;
 import com.wangjie.rapidorm.core.generate.withoutreflection.ModelPropertyFactory;
+import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
@@ -52,7 +52,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void insert(@NonNull final T model) throws Exception {
-        final SQLiteDatabase db = getDatabase();
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
                 executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
@@ -68,7 +68,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
-    private void executeInsert(@NonNull T model, SQLiteDatabase db, List<ColumnConfig> insertColumnConfigs) throws Exception {
+    private void executeInsert(@NonNull T model, RapidORMSQLiteDatabaseDelegate db, List<ColumnConfig> insertColumnConfigs) throws Exception {
         Object[] args;
         if (null != iModelProperty) {
             List<Object> argList = new ArrayList<>();
@@ -87,7 +87,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void update(@NonNull final T model) throws Exception {
-        final SQLiteDatabase db = getDatabase();
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
                 executeUpdate(model, db);
@@ -103,7 +103,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
-    private void executeUpdate(T model, SQLiteDatabase db) throws Exception {
+    private void executeUpdate(T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
         Object[] args;
         if (null != iModelProperty) {
             List<Object> argList = new ArrayList<>();
@@ -124,7 +124,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void delete(@NonNull final T model) throws Exception {
-        final SQLiteDatabase db = getDatabase();
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
                 executeDelete(model, db);
@@ -140,7 +140,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
-    private void executeDelete(@NonNull T model, SQLiteDatabase db) throws Exception {
+    private void executeDelete(@NonNull T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
         List<ColumnConfig> pkColumnConfigs = tableConfig.getPkColumnConfigs();
         if (null == pkColumnConfigs || 0 == pkColumnConfigs.size()) {
             Log.e(TAG, "The table [" + tableConfig.getTableName() + "] has no primary key column!");
@@ -179,7 +179,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void deleteAll() throws Exception {
-        final SQLiteDatabase db = getDatabase();
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
                 executeDeleteAll(db);
@@ -189,13 +189,17 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() {
-                    executeDeleteAll(db);
+                    try {
+                        executeDeleteAll(db);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             });
         }
     }
 
-    private void executeDeleteAll(SQLiteDatabase db) {
+    private void executeDeleteAll(RapidORMSQLiteDatabaseDelegate db) throws Exception {
         String sql = SqlUtil.generateSqlDeleteAll(tableConfig);
         if (RapidORMConfig.DEBUG)
             Log.i(TAG, "executeDeleteAll ==> sql: " + sql);
@@ -220,7 +224,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
         List<T> resultList = new ArrayList<>();
 
-        SQLiteDatabase db = getDatabase();
+        RapidORMSQLiteDatabaseDelegate db = getDatabase();
         Cursor cursor = null;
         try {
             cursor = db.rawQuery(sql, selectionArgs);
@@ -252,7 +256,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void rawExecute(final String sql, final Object[] bindArgs) throws Exception {
-        final SQLiteDatabase db = getDatabase();
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
             synchronized (LOCK) {
                 rawExecute(db, sql, bindArgs);
@@ -268,7 +272,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
-    private void rawExecute(SQLiteDatabase db, String sql, Object[] bindArgs) throws Exception {
+    private void rawExecute(RapidORMSQLiteDatabaseDelegate db, String sql, Object[] bindArgs) throws Exception {
         if (RapidORMConfig.DEBUG)
             Log.i(TAG, "rawExecute ==> sql: " + sql + " >> args: " + Arrays.toString(bindArgs));
 
@@ -291,7 +295,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void insertInTx(final Iterable<T> models) throws Exception {
-        final SQLiteDatabase db = getDatabase();
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         executeInTx(db, new RapidOrmFunc1() {
             @Override
             public void call() throws Exception {
@@ -311,7 +315,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void updateInTx(final Iterable<T> models) throws Exception {
-        final SQLiteDatabase db = getDatabase();
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         executeInTx(db, new RapidOrmFunc1() {
             @Override
             public void call() throws Exception {
@@ -330,7 +334,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public void deleteInTx(final Iterable<T> models) throws Exception {
-        final SQLiteDatabase db = getDatabase();
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         executeInTx(db, new RapidOrmFunc1() {
             @Override
             public void call() throws Exception {
@@ -342,8 +346,8 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @Override
-    public void executeInTx(SQLiteDatabase db, RapidOrmFunc1 func1) throws Exception {
-        if(null == db){
+    public void executeInTx(RapidORMSQLiteDatabaseDelegate db, RapidOrmFunc1 func1) throws Exception {
+        if (null == db) {
             db = getDatabase();
         }
         if (null == func1) {
@@ -366,7 +370,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
 
-    public SQLiteDatabase getDatabase() {
+    public RapidORMSQLiteDatabaseDelegate getDatabase() {
         return DatabaseProcessor.getInstance().getDb();
     }
 

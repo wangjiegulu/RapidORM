@@ -1,8 +1,10 @@
 package com.wangjie.rapidorm.core.dao;
 
-import android.database.sqlite.SQLiteDatabase;
-import com.wangjie.rapidorm.core.RapidORMDatabaseOpenHelper;
+//import android.database.sqlite.RapidORMSupportSQLiteDatabase;
+
 import com.wangjie.rapidorm.core.config.TableConfig;
+import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
+import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDatabaseOpenHelperDelegate;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 
 import java.util.HashMap;
@@ -27,23 +29,31 @@ public class DatabaseProcessor {
     private HashMap<Class<?>, TableConfig> tableConfigMapper = new HashMap<>();
 
     @SuppressWarnings("unchecked")
-    public <T> void createTable(SQLiteDatabase db, Class<T> clazz, boolean ifNotExists) {
+    public <T> void createTable(RapidORMSQLiteDatabaseDelegate db, Class<T> clazz, boolean ifNotExists) {
         TableConfig<T> tableConfig = tableConfigMapper.get(clazz);
         if (null == tableConfig) {
             throw new RapidORMRuntimeException("tableConfigMapper not initialized, had you invoke super() method in the sub class of RapidORMConnection ?");
         }
-        db.execSQL(tableConfig.getTableCreateStatement().buildStatement(ifNotExists).toString());
+        try {
+            db.execSQL(tableConfig.getTableCreateStatement().buildStatement(ifNotExists).toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public <T> void dropTable(SQLiteDatabase db, Class<T> clazz) {
+    public <T> void dropTable(RapidORMSQLiteDatabaseDelegate db, Class<T> clazz) {
         TableConfig<T> tableConfig = tableConfigMapper.get(clazz);
         if (null == tableConfig) {
             return;
         }
-        db.execSQL("drop table " + tableConfig.getTableName());
+        try {
+            db.execSQL("drop table " + tableConfig.getTableName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void dropAllTable(SQLiteDatabase db) {
+    public void dropAllTable(RapidORMSQLiteDatabaseDelegate db) {
         Set<Class<?>> entrySet = tableConfigMapper.keySet();
         for (Class<?> anEntrySet : entrySet) {
             dropTable(db, anEntrySet);
@@ -51,8 +61,8 @@ public class DatabaseProcessor {
     }
 
 
-    private RapidORMDatabaseOpenHelper rapidORMDatabaseOpenHelper;
-    private SQLiteDatabase db;
+    private RapidORMDatabaseOpenHelperDelegate rapidORMDatabaseOpenHelperDelegate;
+    private RapidORMSQLiteDatabaseDelegate db;
     protected List<Class<?>> allTableClass;
 
     private DatabaseProcessor() {
@@ -65,17 +75,19 @@ public class DatabaseProcessor {
      */
     @SuppressWarnings("unchecked")
     public void initializeAllTableClass(List<Class<?>> allTableClass) {
+        tableConfigMapper.clear();
         this.allTableClass = allTableClass;
         for (Class<?> clazz : allTableClass) {
             tableConfigMapper.put(clazz, new TableConfig(clazz));
         }
     }
 
-    public void resetRapidORMDatabaseOpenHelper(RapidORMDatabaseOpenHelper rapidORMDatabaseOpenHelper) {
-        this.rapidORMDatabaseOpenHelper = rapidORMDatabaseOpenHelper;
+    public void resetRapidORMDatabaseOpenHelper(RapidORMDatabaseOpenHelperDelegate rapidORMDatabaseOpenHelper) {
+        this.rapidORMDatabaseOpenHelperDelegate = rapidORMDatabaseOpenHelper;
+        this.db = null;
     }
 
-    public void initializeDatabase(SQLiteDatabase db) {
+    public void initializeDatabase(RapidORMSQLiteDatabaseDelegate db) {
         this.db = db;
     }
 
@@ -83,9 +95,9 @@ public class DatabaseProcessor {
         this.allTableClass = allTableClass;
     }
 
-    public synchronized SQLiteDatabase getDb() {
+    public synchronized RapidORMSQLiteDatabaseDelegate getDb() {
         if (null == db) {
-            db = this.rapidORMDatabaseOpenHelper.getWritableDatabase();
+            db = (RapidORMSQLiteDatabaseDelegate) this.rapidORMDatabaseOpenHelperDelegate.getWritableDatabase();
         }
         return db;
     }
