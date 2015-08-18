@@ -84,6 +84,9 @@ public class DatabaseProcessor {
 
     public void resetRapidORMDatabaseOpenHelper(RapidORMDatabaseOpenHelperDelegate rapidORMDatabaseOpenHelper) {
         this.rapidORMDatabaseOpenHelperDelegate = rapidORMDatabaseOpenHelper;
+        if (null != db) {
+            db.close();
+        }
         this.db = null;
     }
 

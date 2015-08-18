@@ -48,4 +48,9 @@ public class RapidORMDefaultSQLiteDatabaseDelegate extends RapidORMSQLiteDatabas
     public void endTransaction() {
         db.endTransaction();
     }
+
+    @Override
+    public void close() {
+        db.close();
+    }
 }

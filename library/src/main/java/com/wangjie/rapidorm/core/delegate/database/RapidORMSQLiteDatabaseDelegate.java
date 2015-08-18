@@ -32,5 +32,7 @@ public abstract class RapidORMSQLiteDatabaseDelegate<SQLiteDatabase> {
 
     public abstract void endTransaction();
 
+    public abstract void close();
+
 }
 
