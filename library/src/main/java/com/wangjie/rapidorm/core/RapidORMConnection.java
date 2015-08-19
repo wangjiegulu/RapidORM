@@ -78,15 +78,20 @@ public abstract class RapidORMConnection<T extends RapidORMDatabaseOpenHelperDel
     private String databaseName;
     private T rapidORMDatabaseOpenHelper;
 
-    public void resetDatabase(@NonNull String databaseName) {
+    /**
+     * 数据库reset，则返回true；没有reset，则返回false
+     * @param databaseName
+     * @return
+     */
+    public boolean resetDatabase(@NonNull String databaseName) {
         if (databaseName.equals(this.databaseName)) {
-            return;
+            return false;
         }
         daoMapper = new HashMap<>();
         this.databaseName = databaseName;
         rapidORMDatabaseOpenHelper = getRapidORMDatabaseOpenHelper(databaseName);
         DatabaseProcessor.getInstance().resetRapidORMDatabaseOpenHelper(rapidORMDatabaseOpenHelper);
-
+        return true;
     }
 
     protected abstract T getRapidORMDatabaseOpenHelper(@NonNull String databaseName);
