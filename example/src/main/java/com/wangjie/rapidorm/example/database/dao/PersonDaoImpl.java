@@ -1,8 +1,5 @@
 package com.wangjie.rapidorm.example.database.dao;
 
-import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
-import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
-import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.builder.Where;
 import com.wangjie.rapidorm.example.database.model.Person;
 import com.wangjie.rapidorm.example.database.model.config.PersonProperty;
@@ -20,35 +17,26 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
     }
 
     public List<Person> findPersonsByWhere() throws Exception {
-        Where where = getTestWhere();
-
-        QueryBuilder<Person> queryBuilder = queryBuilder()
+        return queryBuilder()
                 .addSelectColumn(PersonProperty.id.column, PersonProperty.typeId.column, PersonProperty.name.column,
                         PersonProperty.age.column, PersonProperty.birth.column, PersonProperty.address.column)
-                .setWhere(where)
+                .setWhere(getTestWhere())
                 .addOrder(PersonProperty.id.column, false)
                 .addOrder(PersonProperty.name.column, true)
-                .setLimit(10);
-        return rawQuery(queryBuilder.generateSql(), queryBuilder.getValuesAsStringArray());
+                .setLimit(10).query(this);
     }
 
     public void deletePerson() throws Exception {
-        Where where = getTestWhere();
-
-        DeleteBuilder<Person> deleteBuilder = deleteBuilder()
-                .setWhere(where);
-        rawExecute(deleteBuilder.generateSql(), deleteBuilder.getValues().toArray());
+        deleteBuilder()
+                .setWhere(getTestWhere()).delete(this);
     }
 
     public void updatePerson() throws Exception {
-        Where where = getTestWhere();
-
         long now = System.currentTimeMillis();
-        UpdateBuilder<Person> updateBuilder = updateBuilder()
-                .setWhere(where)
+        updateBuilder()
+                .setWhere(getTestWhere())
                 .addUpdateColumn(PersonProperty.birth.column, now)
-                .addUpdateColumn(PersonProperty.address.column, "address_" + now);
-        rawExecute(updateBuilder.generateSql(), updateBuilder.getValues().toArray());
+                .addUpdateColumn(PersonProperty.address.column, "address_" + now).update(this);
     }
 
     private Where getTestWhere() {
@@ -67,8 +55,7 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
     }
 
     public List<Person> findPersons() throws Exception {
-        QueryBuilder queryBuilder = queryBuilder().addOrder(PersonProperty.id.column, false).setLimit(10);
-        return rawQuery(queryBuilder.generateSql(), queryBuilder.getValuesAsStringArray());
+        return queryBuilder().addOrder(PersonProperty.id.column, false).setLimit(10).query(this);
     }
 
 }
