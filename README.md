@@ -5,7 +5,7 @@
 - Composite primary key supported with any type.
 - Two ways of sql execute supported: with reflect, without reflect.
 - Compatible with both `android.database.sqlite.SQLiteDatabase` and `net.sqlcipher.database.SQLiteDatabase`.
-- join query NOT supported.
+- Join query NOT supported.
 
 blog: http://www.cnblogs.com/tiantianbyconan/p/4748077.html
 
