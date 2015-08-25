@@ -1,5 +1,5 @@
 # RapidORM
-### Quick solutions for Android ORM
+### Quick solution for Android ORM
 
 ## About RapidORM
 - Composite primary key supported with any type.
