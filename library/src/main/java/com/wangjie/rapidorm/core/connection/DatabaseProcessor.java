@@ -1,7 +1,8 @@
-package com.wangjie.rapidorm.core.dao;
+package com.wangjie.rapidorm.core.connection;
 
 //import android.database.sqlite.RapidORMSupportSQLiteDatabase;
 
+import android.os.Process;
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDatabaseOpenHelperDelegate;
@@ -61,6 +62,7 @@ public class DatabaseProcessor {
     }
 
 
+    private RapidORMConnection rapidORMConnection;
     private RapidORMDatabaseOpenHelperDelegate rapidORMDatabaseOpenHelperDelegate;
     private RapidORMSQLiteDatabaseDelegate db;
     protected List<Class<?>> allTableClass;
@@ -74,7 +76,8 @@ public class DatabaseProcessor {
      * @param allTableClass
      */
     @SuppressWarnings("unchecked")
-    public void initializeAllTableClass(List<Class<?>> allTableClass) {
+    public void initializeConnection(RapidORMConnection rapidORMConnection, List<Class<?>> allTableClass) {
+        this.rapidORMConnection = rapidORMConnection;
         tableConfigMapper.clear();
         this.allTableClass = allTableClass;
         for (Class<?> clazz : allTableClass) {
@@ -100,6 +103,11 @@ public class DatabaseProcessor {
 
     public synchronized RapidORMSQLiteDatabaseDelegate getDb() {
         if (null == db) {
+            if (null == this.rapidORMDatabaseOpenHelperDelegate) {
+                if (!rapidORMConnection.resetDatabaseIfCrash()) {
+                    android.os.Process.killProcess(Process.myPid());
+                }
+            }
             db = (RapidORMSQLiteDatabaseDelegate) this.rapidORMDatabaseOpenHelperDelegate.getWritableDatabase();
         }
         return db;

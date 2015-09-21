@@ -6,6 +6,7 @@ import android.util.Log;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.TableConfig;
+import com.wangjie.rapidorm.core.connection.DatabaseProcessor;
 import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;

@@ -1,7 +1,7 @@
 package com.wangjie.rapidorm.example.database;
 
 import android.support.annotation.NonNull;
-import com.wangjie.rapidorm.core.RapidORMConnection;
+import com.wangjie.rapidorm.core.connection.RapidORMConnection;
 import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDefaultSQLiteOpenHelperDelegate;
 import com.wangjie.rapidorm.example.application.MyApplication;
 import com.wangjie.rapidorm.example.database.model.Person;
@@ -28,6 +28,12 @@ public class DatabaseFactory extends RapidORMConnection<RapidORMDefaultSQLiteOpe
 
     private DatabaseFactory() {
         super();
+    }
+
+    @Override
+    public boolean resetDatabaseIfCrash() {
+        resetDatabase("hello_rapid_orm.db");
+        return true;
     }
 
     @Override

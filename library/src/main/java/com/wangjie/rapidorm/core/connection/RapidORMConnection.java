@@ -1,9 +1,8 @@
-package com.wangjie.rapidorm.core;
+package com.wangjie.rapidorm.core.connection;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
 import com.wangjie.rapidorm.core.dao.BaseDao;
-import com.wangjie.rapidorm.core.dao.DatabaseProcessor;
 import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDatabaseOpenHelperDelegate;
 
 import java.util.HashMap;
@@ -72,14 +71,17 @@ public abstract class RapidORMConnection<T extends RapidORMDatabaseOpenHelperDel
 
     private void initial() {
         allTableClass = registerAllTableClass();
-        DatabaseProcessor.getInstance().initializeAllTableClass(allTableClass);
+        DatabaseProcessor.getInstance().initializeConnection(this, allTableClass);
     }
 
+    /**
+     * Database name
+     */
     private String databaseName;
-    private T rapidORMDatabaseOpenHelper;
 
     /**
-     * 数据库reset，则返回true；没有reset，则返回false
+     * if database reset，return true；else return false.
+     *
      * @param databaseName
      * @return
      */
@@ -89,21 +91,19 @@ public abstract class RapidORMConnection<T extends RapidORMDatabaseOpenHelperDel
         }
         daoMapper = new HashMap<>();
         this.databaseName = databaseName;
-        rapidORMDatabaseOpenHelper = getRapidORMDatabaseOpenHelper(databaseName);
-        DatabaseProcessor.getInstance().resetRapidORMDatabaseOpenHelper(rapidORMDatabaseOpenHelper);
+        DatabaseProcessor.getInstance().resetRapidORMDatabaseOpenHelper(getRapidORMDatabaseOpenHelper(databaseName));
         return true;
     }
 
+    /**
+     * RapidORM will be invoke this method to reconnect database if the application crashed.
+     *
+     * @return
+     */
+    public abstract boolean resetDatabaseIfCrash();
+
     protected abstract T getRapidORMDatabaseOpenHelper(@NonNull String databaseName);
 
-    public T getRapidORMDatabaseOpenHelper() {
-        return rapidORMDatabaseOpenHelper;
-    }
-
     protected abstract List<Class<?>> registerAllTableClass();
-
-    public List<Class<?>> getAllTableClass() {
-        return allTableClass;
-    }
 
 }

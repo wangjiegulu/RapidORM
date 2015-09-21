@@ -6,7 +6,7 @@ import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
-import com.wangjie.rapidorm.core.dao.DatabaseProcessor;
+import com.wangjie.rapidorm.core.connection.DatabaseProcessor;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMDefaultSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.example.database.model.Person;
