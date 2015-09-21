@@ -68,7 +68,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
-    private void executeInsert(@NonNull T model, RapidORMSQLiteDatabaseDelegate db, List<ColumnConfig> insertColumnConfigs) throws Exception {
+    protected void executeInsert(@NonNull T model, RapidORMSQLiteDatabaseDelegate db, List<ColumnConfig> insertColumnConfigs) throws Exception {
         Object[] args;
         if (null != iModelProperty) {
             List<Object> argList = new ArrayList<>();
@@ -103,7 +103,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
-    private void executeUpdate(T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
+    protected void executeUpdate(T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
         Object[] args;
         if (null != iModelProperty) {
             List<Object> argList = new ArrayList<>();
@@ -140,7 +140,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
-    private void executeDelete(@NonNull T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
+    protected void executeDelete(@NonNull T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
         List<ColumnConfig> pkColumnConfigs = tableConfig.getPkColumnConfigs();
         if (null == pkColumnConfigs || 0 == pkColumnConfigs.size()) {
             Log.e(TAG, "The table [" + tableConfig.getTableName() + "] has no primary key column!");
