@@ -34,6 +34,7 @@ public class QueryBuilder<T> extends RapidBuilder {
     private TableConfig<T> tableConfig;
     private List<Object> values;
     private List<OrderCase> orderCase;
+    private boolean distinct;
 
     public QueryBuilder() {
         selectColumns = new ArrayList<>();
@@ -52,6 +53,11 @@ public class QueryBuilder<T> extends RapidBuilder {
 
     public QueryBuilder<T> setLimit(Integer limit) {
         this.limit = limit;
+        return this;
+    }
+
+    public QueryBuilder<T> setDistinct(boolean distinct) {
+        this.distinct = distinct;
         return this;
     }
 
@@ -94,6 +100,9 @@ public class QueryBuilder<T> extends RapidBuilder {
         values.clear();
 
         StringBuilder sql = new StringBuilder(" SELECT ");
+        if (distinct) {
+            sql.append(" DISTINCT ");
+        }
         sql.append(null == selectColumns || 0 == selectColumns.size() ? "*" : CollectionJoiner.join(selectColumns, ","));
         sql.append(" FROM ");
         SqlUtil.formatName(sql, tableConfig.getTableName());
