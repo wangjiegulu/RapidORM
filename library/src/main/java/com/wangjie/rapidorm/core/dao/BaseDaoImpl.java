@@ -1,21 +1,21 @@
 package com.wangjie.rapidorm.core.dao;
 
-import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.util.Log;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.connection.DatabaseProcessor;
+import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.core.generate.withoutreflection.IModelProperty;
-import com.wangjie.rapidorm.core.generate.withoutreflection.ModelPropertyFactory;
-import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
+
+import android.database.Cursor;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.sql.Blob;
@@ -46,9 +46,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         insertStatement = tableConfig.getInsertStatement().getStatement();
         updateStatement = tableConfig.getUpdateStatement().getStatement();
         deleteStatement = tableConfig.getDeleteStatement().getStatement();
-        if (tableConfig.isWithoutReflection()) {
-            iModelProperty = ModelPropertyFactory.getMapper(tableConfig.getPropertyClazz());
-        }
+//        if (tableConfig.isWithoutReflection()) {
+//            iModelProperty = ModelPropertyFactory.getMapper(tableConfig.getPropertyClazz());
+//        }
     }
 
     @Override

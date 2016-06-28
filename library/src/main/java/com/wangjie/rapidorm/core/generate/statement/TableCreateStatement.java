@@ -1,7 +1,7 @@
 package com.wangjie.rapidorm.core.generate.statement;
 
 import android.util.Log;
-import com.wangjie.rapidorm.constants.Constants;
+import com.wangjie.rapidorm.api.constant.Constants;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.ColumnType;

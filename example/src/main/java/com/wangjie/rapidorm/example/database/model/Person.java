@@ -1,7 +1,7 @@
 package com.wangjie.rapidorm.example.database.model;
 
-import com.wangjie.rapidorm.annotations.Column;
-import com.wangjie.rapidorm.annotations.Table;
+import com.wangjie.rapidorm.api.annotations.Column;
+import com.wangjie.rapidorm.api.annotations.Table;
 import com.wangjie.rapidorm.example.database.model.config.PersonProperty;
 
 import java.io.Serializable;
@@ -12,28 +12,31 @@ import java.io.Serializable;
  * Date: 6/25/15.
  */
 @Table(propertyClazz = PersonProperty.class)
-public class Person implements Serializable{
+public class Person implements Serializable {
 
     @Column(primaryKey = true)
-    private Integer id;
+    Integer id;
 
     @Column(primaryKey = true)
-    private Integer typeId;
+    Integer typeId;
 
     @Column
-    private String name;
+    String name;
 
     @Column
-    private Integer age;
+    int age;
 
     @Column
-    private String address;
+    String address;
 
     @Column
-    private Long birth;
+    Long birth;
 
     @Column
-    private Boolean student;
+    Boolean student;
+
+    @Column
+    boolean isSucceed;
 
     public Integer getId() {
         return id;

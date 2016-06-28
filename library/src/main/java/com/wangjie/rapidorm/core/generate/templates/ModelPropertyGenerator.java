@@ -1,16 +1,18 @@
 package com.wangjie.rapidorm.core.generate.templates;
 
-import android.support.annotation.NonNull;
-import com.wangjie.rapidorm.annotations.Column;
-import com.wangjie.rapidorm.annotations.Table;
-import com.wangjie.rapidorm.constants.Constants;
+import com.wangjie.rapidorm.api.annotations.Column;
+import com.wangjie.rapidorm.api.annotations.Table;
+import com.wangjie.rapidorm.api.constant.Constants;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.ReflectionUtils;
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.Template;
 
-import java.io.*;
+import android.support.annotation.NonNull;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.sql.Blob;
 import java.util.ArrayList;
@@ -18,11 +20,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
+
 /**
  * Author: wangjie
  * Email: tiantian.china.2@gmail.com
  * Date: 7/2/15.
  */
+@Deprecated
 public class ModelPropertyGenerator {
     private String tPropertySource = "package ${package};\n" +
             "\n" +
