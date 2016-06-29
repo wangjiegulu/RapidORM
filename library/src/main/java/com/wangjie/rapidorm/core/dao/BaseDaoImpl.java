@@ -9,7 +9,6 @@ import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
-import com.wangjie.rapidorm.core.generate.withoutreflection.IModelProperty;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
@@ -38,7 +37,6 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     final protected String insertStatement;
     final protected String updateStatement;
     final protected String deleteStatement;
-    protected IModelProperty<T> iModelProperty;
 
     public BaseDaoImpl(Class<T> clazz) {
         this.clazz = clazz;
@@ -46,6 +44,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         insertStatement = tableConfig.getInsertStatement().getStatement();
         updateStatement = tableConfig.getUpdateStatement().getStatement();
         deleteStatement = tableConfig.getDeleteStatement().getStatement();
+
 //        if (tableConfig.isWithoutReflection()) {
 //            iModelProperty = ModelPropertyFactory.getMapper(tableConfig.getPropertyClazz());
 //        }
@@ -71,14 +70,14 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     protected void executeInsert(@NonNull T model, RapidORMSQLiteDatabaseDelegate db, List<ColumnConfig> insertColumnConfigs) throws Exception {
         Object[] args;
-        if (null != iModelProperty) {
-            List<Object> argList = new ArrayList<>();
+//        if (null != iModelProperty) {
+        List<Object> argList = new ArrayList<>();
 //            args = new Object[insertColumnConfigs.size()];
-            iModelProperty.bindInsertArgs(model, argList);
-            args = argList.toArray();
-        } else {
-            args = generateArgs(model, insertColumnConfigs).toArray();
-        }
+        tableConfig.bindInsertArgs(model, argList);
+        args = argList.toArray();
+//        } else {
+//            args = generateArgs(model, insertColumnConfigs).toArray();
+//        }
 
         if (RapidORMConfig.DEBUG)
             Log.i(TAG, "executeInsert ==> sql: " + insertStatement + " >> args: " + Arrays.toString(args));
@@ -106,16 +105,16 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     protected void executeUpdate(T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
         Object[] args;
-        if (null != iModelProperty) {
-            List<Object> argList = new ArrayList<>();
-            iModelProperty.bindUpdateArgs(model, argList);
-            iModelProperty.bindPkArgs(model, argList);
-            args = argList.toArray();
-        } else {
-            List<Object> argList = generateArgs(model, tableConfig.getNoPkColumnConfigs());
-            argList.addAll(generateArgs(model, tableConfig.getPkColumnConfigs()));
-            args = argList.toArray();
-        }
+//        if (null != iModelProperty) {
+        List<Object> argList = new ArrayList<>();
+        tableConfig.bindUpdateArgs(model, argList);
+        tableConfig.bindPkArgs(model, argList);
+        args = argList.toArray();
+//        } else {
+//            List<Object> argList = generateArgs(model, tableConfig.getNoPkColumnConfigs());
+//            argList.addAll(generateArgs(model, tableConfig.getPkColumnConfigs()));
+//            args = argList.toArray();
+//        }
 
         if (RapidORMConfig.DEBUG)
             Log.i(TAG, "executeUpdate ==> sql: " + updateStatement + " >> args: " + Arrays.toString(args));
@@ -149,13 +148,13 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         }
 
         Object[] args;
-        if (null != iModelProperty) {
-            List<Object> argList = new ArrayList<>();
-            iModelProperty.bindPkArgs(model, argList);
-            args = argList.toArray();
-        } else {
-            args = generateArgs(model, pkColumnConfigs).toArray();
-        }
+//        if (null != iModelProperty) {
+        List<Object> argList = new ArrayList<>();
+        tableConfig.bindPkArgs(model, argList);
+        args = argList.toArray();
+//        } else {
+//            args = generateArgs(model, pkColumnConfigs).toArray();
+//        }
 
         if (RapidORMConfig.DEBUG)
             Log.i(TAG, "executeDelete ==> sql: " + deleteStatement + " >> args: " + Arrays.toString(args));
@@ -231,20 +230,20 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             cursor = db.rawQuery(sql, selectionArgs);
             while (cursor.moveToNext()) {
                 T obj;
-                if (null != iModelProperty) {
-                    obj = iModelProperty.parseFromCursor(cursor);
-                } else {
-                    obj = clazz.newInstance();
-                    List<ColumnConfig> allColumnConfigs = tableConfig.getAllColumnConfigs();
-                    for (ColumnConfig columnConfig : allColumnConfigs) {
-                        Field field = columnConfig.getField();
-                        field.setAccessible(true);
-                        int index = cursor.getColumnIndex(columnConfig.getColumnName());
-                        if (-1 != index) {
-                            field.set(obj, getObject(cursor, field.getType(), index));
-                        }
-                    }
-                }
+//                if (null != iModelProperty) {
+                obj = tableConfig.parseFromCursor(cursor);
+//                } else {
+//                    obj = clazz.newInstance();
+//                    List<ColumnConfig> allColumnConfigs = tableConfig.getAllColumnConfigs();
+//                    for (ColumnConfig columnConfig : allColumnConfigs) {
+//                        Field field = columnConfig.getField();
+//                        field.setAccessible(true);
+//                        int index = cursor.getColumnIndex(columnConfig.getColumnName());
+//                        if (-1 != index) {
+//                            field.set(obj, getObject(cursor, field.getType(), index));
+//                        }
+//                    }
+//                }
                 resultList.add(obj);
             }
         } catch (Exception ex) {
@@ -376,9 +375,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     /**
-     * 关闭cursor
-     *
-     * @param cursor
+     * Close cursor safely
      */
     protected void closeCursor(Cursor cursor) {
         if (null != cursor) {
@@ -390,14 +387,6 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         return SqlUtil.convertValue(field.get(model));
     }
 
-    /**
-     * 反射获取cursor中对应field的值
-     *
-     * @param cursor
-     * @param fieldType
-     * @param index
-     * @return
-     */
     protected Object getObject(Cursor cursor, Class fieldType, int index) {
         if (null == cursor) {
             return null;
@@ -423,9 +412,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     /**
-     * 构建一个QueryBuilder
-     *
-     * @return
+     * Build a QueryBuilder
      */
     public QueryBuilder<T> queryBuilder() {
         QueryBuilder<T> queryBuilder = new QueryBuilder<>();
@@ -434,9 +421,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     /**
-     * 构建一个UpdateBuilder
-     *
-     * @return
+     * Build an UpdateBuilder
      */
     public UpdateBuilder<T> updateBuilder() {
         UpdateBuilder<T> updateBuilder = new UpdateBuilder<>();
@@ -445,9 +430,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     /**
-     * 构建一个DeleteBuilder
-     *
-     * @return
+     * Build a DeleteBuilder
      */
     public DeleteBuilder<T> deleteBuilder() {
         DeleteBuilder<T> deleteBuilder = new DeleteBuilder<>();

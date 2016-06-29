@@ -2,7 +2,6 @@ package com.wangjie.rapidorm.example.database.model;
 
 import com.wangjie.rapidorm.api.annotations.Column;
 import com.wangjie.rapidorm.api.annotations.Table;
-import com.wangjie.rapidorm.example.database.model.config.PersonProperty;
 
 import java.io.Serializable;
 
@@ -11,13 +10,13 @@ import java.io.Serializable;
  * Email: tiantian.china.2@gmail.com
  * Date: 6/25/15.
  */
-@Table(propertyClazz = PersonProperty.class)
+@Table
 public class Person implements Serializable {
 
     @Column(primaryKey = true)
     Integer id;
 
-    @Column(primaryKey = true)
+    @Column(primaryKey = true, name = "type_id")
     Integer typeId;
 
     @Column
@@ -35,7 +34,7 @@ public class Person implements Serializable {
     @Column
     Boolean student;
 
-    @Column
+    @Column(name = "is_succeed")
     boolean isSucceed;
 
     public Integer getId() {

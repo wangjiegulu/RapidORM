@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class Where {
     /**
-     * 相等条件判断
+     * Equal condition
      *
      * @param column
      * @param value
@@ -26,7 +26,8 @@ public class Where {
     }
 
     /**
-     * 不相等条件判断
+     *
+     * Unequal condition
      *
      * @param column
      * @param value
@@ -37,7 +38,7 @@ public class Where {
     }
 
     /**
-     * 大于条件判断
+     * Greater than condition
      *
      * @param column
      * @param value
@@ -48,7 +49,7 @@ public class Where {
     }
 
     /**
-     * 小于条件判断
+     * Less than condition
      *
      * @param column
      * @param value
@@ -59,7 +60,7 @@ public class Where {
     }
 
     /**
-     * 大于等于条件
+     * Greater than or equal condition
      *
      * @param column
      * @param value
@@ -70,7 +71,7 @@ public class Where {
     }
 
     /**
-     * 小于等于条件
+     * Less than or equal condition
      *
      * @param column
      * @param value
@@ -81,7 +82,7 @@ public class Where {
     }
 
     /**
-     * 包含条件判断
+     * Contains condition
      *
      * @param column
      * @param values
@@ -96,7 +97,7 @@ public class Where {
     }
 
     /**
-     * 不包含条件判断
+     * Not contains condition
      *
      * @param column
      * @param values
@@ -136,7 +137,7 @@ public class Where {
     }
 
     /**
-     * 为null条件判断
+     * Is null condition
      *
      * @param column
      * @return
@@ -146,7 +147,7 @@ public class Where {
     }
 
     /**
-     * 不为null条件判断
+     * Is not null condition
      *
      * @param column
      * @return
@@ -193,7 +194,7 @@ public class Where {
     }
 
     /**
-     * 原生sql条件判断
+     * Raw sql condition
      *
      * @param rawWhere
      * @param values

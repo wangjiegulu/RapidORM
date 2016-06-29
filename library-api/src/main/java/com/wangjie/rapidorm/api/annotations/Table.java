@@ -16,6 +16,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Table {
+    /**
+     * Table name
+     * @return
+     */
     String name() default Constants.AnnotationNotSetValue.TABLE_NAME;
-    Class propertyClazz() default Object.class;
 }

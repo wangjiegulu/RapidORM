@@ -16,7 +16,7 @@ public class GuessClass {
 
 
     public static class ModelProperty {
-        public static final String CLASS_NAME = "com.wangjie.rapidorm.core.generate.withoutreflection.IModelProperty";
+//        public static final String CLASS_NAME = "com.wangjie.rapidorm.core.generate.withoutreflection.IModelProperty";
 
         public static final String METHOD_NAME_BIND_INSERT_ARGS = "bindInsertArgs";
 

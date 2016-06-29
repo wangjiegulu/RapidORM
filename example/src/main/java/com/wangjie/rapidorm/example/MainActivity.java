@@ -1,11 +1,5 @@
 package com.wangjie.rapidorm.example;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
 import com.wangjie.androidinject.annotation.annotations.base.AIClick;
 import com.wangjie.androidinject.annotation.annotations.base.AILayout;
 import com.wangjie.androidinject.annotation.annotations.base.AIView;
@@ -13,6 +7,13 @@ import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.example.database.DatabaseFactory;
 import com.wangjie.rapidorm.example.database.dao.PersonDaoImpl;
 import com.wangjie.rapidorm.example.database.model.Person;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +133,7 @@ public class MainActivity extends BaseActivity {
                 } catch (Exception e) {
                     Log.e(TAG, "", e);
                 }
-                Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start));
+                Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start) + "ms");
                 RapidORMConfig.DEBUG = true;
 //                deleteAll();
             }

@@ -1,17 +1,18 @@
 package com.wangjie.rapidorm.compiler.objs;
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.wangjie.rapidorm.api.annotations.Column;
+import com.wangjie.rapidorm.api.annotations.Table;
 import com.wangjie.rapidorm.api.constant.Constants;
 import com.wangjie.rapidorm.compiler.constants.GuessClass;
 import com.wangjie.rapidorm.compiler.util.LogUtil;
 
-import java.sql.Blob;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,7 +28,7 @@ import javax.lang.model.element.Modifier;
  * Date: 6/28/16.
  */
 public class TableEntry {
-    private static final String STUFF_API_WORKER = "_Config";
+    private static final String STUFF_RAPID_ORM_TABLE = "_RORM";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:SSS");
 
     private Element mSourceClassEle;
@@ -64,7 +65,7 @@ public class TableEntry {
         LogUtil.logger("mSourceClassEle: " + mSourceClassEle + ", mColumnList: " + mColumnList);
 
         String sourceClassSimpleName = mSourceClassEle.getSimpleName().toString();
-        String targetClassSimpleName = sourceClassSimpleName + STUFF_API_WORKER;
+        String targetClassSimpleName = sourceClassSimpleName + STUFF_RAPID_ORM_TABLE;
         String targetPackage = mSourceClassEle.getEnclosingElement().toString();
 
         TypeSpec.Builder result = TypeSpec.classBuilder(targetClassSimpleName)
@@ -72,11 +73,6 @@ public class TableEntry {
                 .superclass( // extends TableConfig
                         ParameterizedTypeName.get(
                                 ClassName.bestGuess(GuessClass.BASE_TABLE_CONFIG),
-                                mSourceClassEleTypeName
-                        )
-                ).addSuperinterface( // implement IModelProperty
-                        ParameterizedTypeName.get(
-                                ClassName.bestGuess(GuessClass.ModelProperty.CLASS_NAME),
                                 mSourceClassEleTypeName
                         )
                 );
@@ -109,24 +105,28 @@ public class TableEntry {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED);
 
+        parseAllConfigsMethod.addStatement("tableName = $S", parseTableName(mSourceClassEle.getSimpleName().toString(), mSourceClassEle.getAnnotation(Table.class)));
+
         for (ColumnEntry columnEntry : mColumnList) {
             Element element = columnEntry.getFieldColumnElement();
             Column column = element.getAnnotation(Column.class);
             String columnConfigFieldName = element.getSimpleName().toString() + "ColumnConfig";
-            parseAllConfigsMethod.addStatement("$T $L = buildColumnConfig($S/*name*/, $L/*autoincrement*/, $L/*notNull*/, $S/*defaultValue*/, $L/*index*/, $L/*unique*/, $L/*uniqueCombo*/, $L/*primaryKey*/)",
+            parseAllConfigsMethod.addStatement("$T $L = buildColumnConfig($S/*column name*/, $L/*autoincrement*/, $L/*notNull*/, $S/*defaultValue*/, $L/*index*/, $L/*unique*/, $L/*uniqueCombo*/, $L/*primaryKey*/, $S/*dbType*/)",
                     ClassName.bestGuess(GuessClass.COLUMN_CONFIG),
                     columnConfigFieldName,
-                    getColumnName(element.getSimpleName().toString(), column),
-                    column.primaryKey(),
+                    columnEntry.getColumnName(),
                     column.autoincrement(),
-                    column.defaultValue(),
                     column.notNull(),
+                    column.defaultValue(),
+                    column.index(),
                     column.unique(),
                     column.uniqueCombo(),
-                    column.index()
+                    column.primaryKey(),
+                    columnEntry.getDbType()
             );
 
             parseAllConfigsMethod.addStatement("allColumnConfigs.add($L)", columnConfigFieldName);
+            parseAllConfigsMethod.addStatement("allFieldColumnConfigMapper.put($S/*field name*/, $L)", element.getSimpleName(), columnConfigFieldName);
             int pcCounts = 0; // 统计主键个数
             if (column.primaryKey()) {
                 pcCounts++;
@@ -191,12 +191,26 @@ public class TableEntry {
                 .addStatement("$T model = new $T()", mSourceClassEleTypeName, mSourceClassEleTypeName)
                 .addStatement("int index");
 
+        ClassName stringClassName = ClassName.get(String.class);
 
         for (ColumnEntry columnEntry : mColumnList) {
             String fieldSimpleName = columnEntry.getFieldSimpleName();
 
             // parseFromCursor
             parseFromCursorMethodStatement(parseFromCursorMethod, columnEntry, fieldSimpleName);
+
+            // Add `public static final String COLUMN_NAME...`
+            String columnName = columnEntry.getColumnName();
+            result.addField(
+                    FieldSpec.builder(stringClassName, columnName.toUpperCase(), Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC)
+                            .addJavadoc("Column name: $S, field name: {@link $T#$L}\n",
+                                    columnName,
+                                    mSourceClassEleTypeName,
+                                    columnEntry.getFieldSimpleName()
+                            )
+                            .initializer("$S", columnName)
+                            .build()
+            );
 
             Column column = columnEntry.getFieldColumnElement().getAnnotation(Column.class);
             if (column.primaryKey()) {
@@ -225,14 +239,14 @@ public class TableEntry {
     }
 
     private void parseFromCursorMethodStatement(MethodSpec.Builder parseFromCursorMethod, ColumnEntry columnEntry, String fieldSimpleName) {
-        parseFromCursorMethod.addStatement("index = cursor.getColumnIndex($S)", fieldSimpleName);
+        parseFromCursorMethod.addStatement("index = cursor.getColumnIndex($S)", columnEntry.getColumnName());
 
         parseFromCursorMethod.beginControlFlow("if(-1 != index)");
 
         if (isBoolean(columnEntry.getFieldColumnTypeName())) {
             parseFromCursorMethod.addStatement("model.$L = cursor.isNull(index) ? null : (cursor.getInt(index) == 1)", fieldSimpleName);
         } else {
-            parseFromCursorMethod.addStatement("model.$L = cursor.isNull(index) ? null : (cursor.get$L(index))", fieldSimpleName, getDataType(columnEntry.getFieldColumnTypeName()));
+            parseFromCursorMethod.addStatement("model.$L = cursor.isNull(index) ? null : (cursor.get$L(index))", fieldSimpleName, columnEntry.getDataType());
         }
 
         parseFromCursorMethod.endControlFlow();
@@ -269,39 +283,18 @@ public class TableEntry {
         }
     }
 
+
     /**
-     * 获得Column对应的value值（表的列名）
+     * 获得Table对应的value值（表名）
      *
-     * @return 如果该属性的column注解value为空，则使用属性名作为列名；否则使用value值
+     * @return 如果Table注解为空，那么直接使用类名作为表名；否则使用value值
      */
-    private String getColumnName(String defaultName, Column column) {
-        String name = column.name();
-        if (Constants.AnnotationNotSetValue.COLUMN_NAME.equals(name)) { // 如果该属性的column注解value为空，则使用属性名
+    private String parseTableName(String defaultName, Table table) {
+        String name = table.name();
+        if (Constants.AnnotationNotSetValue.TABLE_NAME.equals(name)) { // 如果类中没有加Table注解，或者Table注解为空，那么直接使用类名作为表名
             return defaultName;
         }
         return name;
-    }
-
-
-    protected String getDataType(TypeName typeName) {
-        String typeNameStr = typeName.toString();
-        LogUtil.logger("getDateType, typeNameStr: " + typeNameStr);
-        if (String.class.getCanonicalName().equals(typeNameStr)) {
-            return "String";
-        } else if (Long.class.getCanonicalName().equals(typeNameStr) || long.class.getCanonicalName().equals(typeNameStr)) {
-            return "Long";
-        } else if (Integer.class.getCanonicalName().equals(typeNameStr) || int.class.getCanonicalName().equals(typeNameStr) || Boolean.class.getCanonicalName().equals(typeNameStr) || boolean.class.getCanonicalName().equals(typeNameStr)) {
-            return "Int";
-        } else if (Short.class.getCanonicalName().equals(typeNameStr) || short.class.getCanonicalName().equals(typeNameStr)) {
-            return "Short";
-        } else if (Double.class.getCanonicalName().equals(typeNameStr) || double.class.getCanonicalName().equals(typeNameStr)) {
-            return "Double";
-        } else if (Float.class.getCanonicalName().equals(typeNameStr) || float.class.getCanonicalName().equals(typeNameStr)) {
-            return "Float";
-        } else if (Blob.class.getCanonicalName().equals(typeNameStr)) {
-            return "Blob";
-        }
-        return null;
     }
 
     private boolean isBoolean(TypeName typeName) {

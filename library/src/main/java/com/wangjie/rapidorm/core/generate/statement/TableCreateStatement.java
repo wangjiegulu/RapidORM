@@ -1,11 +1,11 @@
 package com.wangjie.rapidorm.core.generate.statement;
 
-import android.util.Log;
 import com.wangjie.rapidorm.api.constant.Constants;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.core.config.ColumnConfig;
-import com.wangjie.rapidorm.core.config.ColumnType;
 import com.wangjie.rapidorm.core.config.TableConfig;
+
+import android.util.Log;
 
 import java.util.List;
 
@@ -50,7 +50,7 @@ public class TableCreateStatement<T> {
                     .append(
                             StatementTemplate.CREATE_TABLE_COLUMN
                                     .replace("#{columnName}", columnConfig.getColumnName())
-                                    .replace("#{type}", ColumnType.getTypeName(columnConfig.getField().getType()))
+                                    .replace("#{type}", columnConfig.getDbType())
                                     .replace("#{primaryKey}", !isPkMultiple && columnConfig.isPrimaryKey() ? "PRIMARY KEY" : "")
                                     .replace("#{autoincrement}", !isPkMultiple && columnConfig.isAutoincrement() ? "AUTOINCREMENT" : "")
                                     .replace("#{notNull}", columnConfig.isNotNull() ? "NOT NULL" : "")
@@ -75,12 +75,12 @@ public class TableCreateStatement<T> {
     }
 
     private void addPrimaryKeyConstraints(List<ColumnConfig> pkColumnConfigs, StringBuilder sql) {
-        // 主键约束
+        // Primary key Constraint
         int pkCount = pkColumnConfigs.size();
         switch (pkCount) {
-            case 0: // 没有主键
+            case 0: // No primary key
                 break;
-            case 1: // 只有一个主键
+            case 1: // One primary key
                 ColumnConfig columnConfig = pkColumnConfigs.get(0);
                 sql.append(",")
                         .append("\n")
@@ -88,7 +88,7 @@ public class TableCreateStatement<T> {
                                         .replace("#{primaryKeyJoin}", columnConfig.getColumnName())
                         );
                 break;
-            default: // 多主键
+            default: // Multiple primary keys
                 sql.append(",")
                         .append("\n")
                         .append(StatementTemplate.CREATE_TABLE_PRIMARY_KEY

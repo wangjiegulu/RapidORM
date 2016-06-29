@@ -51,13 +51,13 @@ public class TableProcessor extends BaseAbstractProcessor {
                 String key = entry.getKey();
                 TableEntry tableEntry = entry.getValue();
                 try {
-                    logger("ApiWorker generate START -> " + key);
+                    logger("TableConfig generate START -> " + key);
                     tableEntry.brewJava().writeTo(filer);
-                    logger("ApiWorker generate END -> " + key + ", apiWorker: " + tableEntry);
+                    logger("TableConfig generate END -> " + key + ", tableEntry: " + tableEntry);
                 } catch (RuntimeException e) {
                     throw e;
                 } catch (Throwable throwable) {
-                    logger("ApiWorker generate FAILED -> " + key + ", apiWorker: " + tableEntry);
+                    logger("TableConfig generate FAILED -> " + key + ", tableEntry: " + tableEntry);
                     loggerE(throwable);
                 }
             }
