@@ -62,7 +62,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-                    executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
+                    synchronized (LOCK) {
+                        executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
+                    }
                 }
             });
         }
@@ -97,7 +99,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-                    executeUpdate(model, db);
+                    synchronized (LOCK) {
+                        executeUpdate(model, db);
+                    }
                 }
             });
         }
@@ -134,7 +138,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-                    executeDelete(model, db);
+                    synchronized (LOCK) {
+                        executeDelete(model, db);
+                    }
                 }
             });
         }
