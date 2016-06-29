@@ -46,6 +46,9 @@ public class Person implements Serializable {
 
     @Column(name = "is_succeed")
     boolean isSucceed;
+    
+    // getter/setter...
+}
 ```
 
 ### 2. Rebuild Project
@@ -232,7 +235,7 @@ public class Person_RORM extends TableConfig<Person> {
 
 ### 3. Register persistent class
 
-Override `registerTableConfigMapper(HashMap<Class, TableConfig> tableConfigMapper)` method:
+Extends `RapidORMConnection` and override `registerTableConfigMapper(HashMap<Class, TableConfig> tableConfigMapper)` method:
 
 ```java
 @Override
