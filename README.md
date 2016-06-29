@@ -3,7 +3,7 @@
 
 ## About RapidORM
 - Composite primary key supported with any type.
-- Two ways of sql execute supported: with reflect, without reflect.
+- supports the use of reflective and non-reflective (template generation) two ways to perform SQL.
 - Compatible with both `android.database.sqlite.SQLiteDatabase` and `net.sqlcipher.database.SQLiteDatabase`.
 - Join query NOT supported.
 
