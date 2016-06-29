@@ -1,9 +1,11 @@
 # RapidORM
 ### Quick solution for Android ORM
 
+Android lightweight, high performance ORM framework.
+
 ## About RapidORM
 - Composite primary key supported with any type.
-- supports the use of reflective and non-reflective (template generation) two ways to perform SQL.
+- Non-reflective to execute SQLs.
 - Compatible with both `android.database.sqlite.SQLiteDatabase` and `net.sqlcipher.database.SQLiteDatabase`.
 - Join query NOT supported.
 
