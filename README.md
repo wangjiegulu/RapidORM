@@ -7,7 +7,9 @@
 - Compatible with both `android.database.sqlite.SQLiteDatabase` and `net.sqlcipher.database.SQLiteDatabase`.
 - Join query NOT supported.
 
-blog: http://www.cnblogs.com/tiantianbyconan/p/4748077.html
+`v2.0` blog: <http://www.cnblogs.com/tiantianbyconan/p/5626716.html>
+
+`v1.0` blog: <http://www.cnblogs.com/tiantianbyconan/p/4748077.html>
 
 
 License
