@@ -3,6 +3,7 @@ package com.wangjie.rapidorm.core.connection;
 //import android.database.sqlite.RapidORMSupportSQLiteDatabase;
 
 import android.os.Process;
+
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDatabaseOpenHelperDelegate;
@@ -52,6 +53,19 @@ public class DatabaseProcessor {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public <T, R> void addColumn(RapidORMSQLiteDatabaseDelegate db, Class<T> clazz, String columnName, R columnType) {
+        TableConfig<T> tableConfig = tableConfigMapper.get(clazz);
+        if (null == tableConfig) {
+            return;
+        }
+        try {
+            db.execSQL("alter table ? add column ? ? ", new String[]{tableConfig.getTableName(), columnName, columnType.getClass().getSimpleName()});
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void dropAllTable(RapidORMSQLiteDatabaseDelegate db) {

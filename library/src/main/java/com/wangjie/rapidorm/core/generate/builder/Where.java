@@ -87,11 +87,11 @@ public class Where {
      * @param values
      * @return
      */
-    public static Where in(String column, Object... values) {
-        return in(column, Arrays.asList(values));
+    public static Where inner(String column, Object... values) {
+        return inner(column, Arrays.asList(values));
     }
 
-    public static Where in(String column, List<Object> values) {
+    public static Where inner(String column, List<Object> values) {
         return inOrNot(column, values, " IN ");
     }
 

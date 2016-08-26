@@ -3,6 +3,7 @@ package com.wangjie.rapidorm.core.dao;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
