@@ -1,5 +1,7 @@
 package com.wangjie.rapidorm.core.delegate.database;
 
+import com.wangjie.rapidorm.core.delegate.sqlitestatement.RapidORMSQLiteStatementDelegate;
+
 import android.database.Cursor;
 
 /**
@@ -31,6 +33,8 @@ public abstract class RapidORMSQLiteDatabaseDelegate<SQLiteDatabase> {
     public abstract void setTransactionSuccessful();
 
     public abstract void endTransaction();
+
+    public abstract RapidORMSQLiteStatementDelegate compileStatement(String sql) throws Exception;
 
     public abstract void close();
 

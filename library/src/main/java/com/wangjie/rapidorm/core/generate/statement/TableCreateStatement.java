@@ -18,7 +18,7 @@ public class TableCreateStatement<T> {
 
     public static class StatementTemplate {
         public static final String CREATE_TABLE_HEAD = " CREATE TABLE #{ifNotExists} `#{tableName}` ( ";
-        public static final String CREATE_TABLE_COLUMN = " '#{columnName}' #{type} #{primaryKey} #{autoincrement} #{notNull} #{unique} #{default}";
+        public static final String CREATE_TABLE_COLUMN = " `#{columnName}` #{type} #{primaryKey} #{autoincrement} #{notNull} #{unique} #{default}";
         public static final String CREATE_TABLE_PRIMARY_KEY = " PRIMARY KEY (#{primaryKeyJoin}) ";
         public static final String CREATE_TABLE_END = " ); ";
     }

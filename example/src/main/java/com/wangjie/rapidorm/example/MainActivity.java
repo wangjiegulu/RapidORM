@@ -1,8 +1,5 @@
 package com.wangjie.rapidorm.example;
 
-import com.wangjie.androidinject.annotation.annotations.base.AIClick;
-import com.wangjie.androidinject.annotation.annotations.base.AILayout;
-import com.wangjie.androidinject.annotation.annotations.base.AIView;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.example.database.DatabaseFactory;
 import com.wangjie.rapidorm.example.database.dao.PersonDaoImpl;
@@ -18,30 +15,27 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-@AILayout(R.layout.activity_main)
 public class MainActivity extends BaseActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    @AIView(R.id.activity_main_db_data_list_tv)
     private TextView dataListTv;
+
+    private PersonDaoImpl personDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        dataListTv = (TextView) findViewById(R.id.activity_main_db_data_list_tv);
 
         DatabaseFactory.getInstance().resetDatabase("hello_rapid_orm.db");
+        personDao = new PersonDaoImpl();
         queryAll();
 
     }
 
-
-    @Override
-    @AIClick({R.id.activity_main_insert_btn, R.id.activity_main_insert_performance_btn,
-            R.id.activity_main_update_btn, R.id.activity_main_delete_btn,
-            R.id.activity_main_delete_all_btn, R.id.activity_main_query_by_builder_btn,
-            R.id.activity_main_update_by_builder_btn, R.id.activity_main_delete_by_builder_btn
-    })
-    public void onClickCallbackSample(View view) {
+    public void onClick(View view) {
         switch (view.getId()) {
             case R.id.activity_main_insert_btn:
                 insert();
@@ -82,7 +76,7 @@ public class MainActivity extends BaseActivity {
 
     private void deleteByBuilder() {
         try {
-            DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).deletePerson();
+            personDao.deletePerson();
         } catch (Exception e) {
             Log.e(TAG, "", e);
         }
@@ -90,7 +84,7 @@ public class MainActivity extends BaseActivity {
 
     private void updateByBuilder() {
         try {
-            DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).updatePerson();
+            personDao.updatePerson();
         } catch (Exception e) {
             Log.e(TAG, "", e);
         }
@@ -98,7 +92,7 @@ public class MainActivity extends BaseActivity {
 
     private void queryByBuilder() {
         try {
-            List<Person> personList = DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).findPersonsByWhere();
+            List<Person> personList = personDao.findPersonsByWhere();
             dataListTv.setText("query by builder" + personList.toString());
         } catch (Exception e) {
             Log.e(TAG, "", e);
@@ -107,7 +101,7 @@ public class MainActivity extends BaseActivity {
 
     private void deleteAll() {
         try {
-            DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).deleteAll();
+            personDao.deleteAll();
         } catch (Exception e) {
             Log.e(TAG, "", e);
         }
@@ -121,83 +115,52 @@ public class MainActivity extends BaseActivity {
                 deleteAll();
                 RapidORMConfig.DEBUG = false;
                 List<Person> persons = new ArrayList<>();
-                for (int i = 0; i < 5000; i++) {
+                for (int i = 0; i < 10000; i++) {
                     Person p = getPerson();
                     p.setId(1 + i);
                     p.setName("wangjie_" + i);
                     persons.add(p);
                 }
-                long start = System.currentTimeMillis();
+                PersonDaoImpl personDao = new PersonDaoImpl();
                 try {
-                    DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).insertInTx(persons);
+                    long start = System.currentTimeMillis();
+                    personDao.insertInTx(persons);
+                    Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start) + "ms");
                 } catch (Exception e) {
                     Log.e(TAG, "", e);
                 }
-                Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start) + "ms");
                 RapidORMConfig.DEBUG = true;
-//                deleteAll();
             }
         }).start();
     }
 
-//    private void insertPerformance() {
-//        Log.d(TAG, "insertPerformance start...");
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                deleteAll();
-//                List<Person> persons = new ArrayList<>();
-//                for (int i = 0; i < 5000; i++) {
-//                    Person p = getPerson();
-//                    p.setId(1 + i);
-//                    p.setName("wangjie_" + i);
-//                    persons.add(p);
-//                }
-//
-//                long start = System.currentTimeMillis();
-//                for(Person person : persons){
-//                    try {
-//                        DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).executeInsert(person, DatabaseProcessor.getInstance().getDb(), SqlUtil.getInsertColumnConfigs(DatabaseProcessor.getInstance().getTableConfig(Person.class)));
-//                    } catch (Exception e) {
-//                        Log.e(TAG, "", e);
-//                    }
-//                }
-//                Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start));
-////                deleteAll();
-//            }
-//        }).start();
-//    }
-
-
     private void insert() {
         try {
-            DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).insert(getPerson());
+            personDao.insert(getPerson());
         } catch (Exception e) {
             Log.e(TAG, "", e);
         }
     }
 
     private void update() {
-        showToastMessage("update");
         Person p = new Person();
         p.setId(100);
         p.setTypeId(1);
         p.setName("wangjie_modified");
         p.setStudent(false);
         try {
-            DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).update(p);
+            personDao.update(p);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void delete() {
-        showToastMessage("delete");
         Person p = new Person();
         p.setId(100);
         p.setTypeId(1);
         try {
-            DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).delete(p);
+            personDao.delete(p);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -217,8 +180,8 @@ public class MainActivity extends BaseActivity {
 
     private void queryAll() {
         try {
-            List<Person> personList = DatabaseFactory.getInstance().getDao(PersonDaoImpl.class).findPersons();
-            dataListTv.setText("last 10 datas: " + personList.toString());
+            List<Person> personList = personDao.findPersons();
+            dataListTv.setText("data: \n" + personList.toString());
         } catch (Exception e) {
             Log.e(TAG, "", e);
         }

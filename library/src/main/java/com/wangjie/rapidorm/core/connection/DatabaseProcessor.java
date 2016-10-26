@@ -2,12 +2,12 @@ package com.wangjie.rapidorm.core.connection;
 
 //import android.database.sqlite.RapidORMSupportSQLiteDatabase;
 
+import android.os.Process;
+
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDatabaseOpenHelperDelegate;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
-
-import android.os.Process;
 
 import java.util.Map;
 import java.util.Set;
@@ -99,15 +99,19 @@ public class DatabaseProcessor {
         this.db = db;
     }
 
-    public synchronized RapidORMSQLiteDatabaseDelegate getDb() {
+    public RapidORMSQLiteDatabaseDelegate getDb() {
         checkInitialized();
         if (null == db) {
-            if (null == this.rapidORMDatabaseOpenHelperDelegate) {
-                if (!rapidORMConnection.resetDatabaseIfCrash()) {
-                    android.os.Process.killProcess(Process.myPid());
+            synchronized (this) {
+                if (null == db) {
+                    if (null == this.rapidORMDatabaseOpenHelperDelegate) {
+                        if (!rapidORMConnection.resetDatabaseIfCrash()) {
+                            android.os.Process.killProcess(Process.myPid());
+                        }
+                    }
+                    db = (RapidORMSQLiteDatabaseDelegate) this.rapidORMDatabaseOpenHelperDelegate.getWritableDatabase();
                 }
             }
-            db = (RapidORMSQLiteDatabaseDelegate) this.rapidORMDatabaseOpenHelperDelegate.getWritableDatabase();
         }
         return db;
     }
@@ -118,8 +122,8 @@ public class DatabaseProcessor {
         return (TableConfig<T>) tableConfigMapper.get(clazz);
     }
 
-    private void checkInitialized(){
-        if(!isInitialized){
+    private void checkInitialized() {
+        if (!isInitialized) {
             throw new RapidORMRuntimeException("DatabaseProcessor is not initialized, had you invoke super() method in the sub class of RapidORMConnection ?");
         }
     }

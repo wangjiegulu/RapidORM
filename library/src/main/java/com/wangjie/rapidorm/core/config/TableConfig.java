@@ -1,15 +1,18 @@
 package com.wangjie.rapidorm.core.config;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteStatement;
+import android.support.annotation.NonNull;
+
 import com.wangjie.rapidorm.api.annotations.Column;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
+import com.wangjie.rapidorm.core.delegate.sqlitestatement.RapidORMSQLiteStatementDelegate;
 import com.wangjie.rapidorm.core.generate.statement.DeleteStatement;
 import com.wangjie.rapidorm.core.generate.statement.InsertStatement;
 import com.wangjie.rapidorm.core.generate.statement.TableCreateStatement;
 import com.wangjie.rapidorm.core.generate.statement.UpdateStatement;
+import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.util.ReflectionUtils;
-
-import android.database.Cursor;
-import android.support.annotation.NonNull;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -18,7 +21,7 @@ import java.util.List;
 
 /**
  * Table configuration
- *
+ * <p>
  * Author: wangjie
  * Email: tiantian.china.2@gmail.com
  * Date: 6/25/15.
@@ -50,7 +53,7 @@ public abstract class TableConfig<T> {
         this.tableClazz = tableClazz;
         parseAllConfigs();
 
-        if(RapidORMConfig.BIND_FIELD_COLUMN_WITH_REFLECTION){
+        if (RapidORMConfig.BIND_FIELD_COLUMN_WITH_REFLECTION) {
             bindFieldColumnWithReflection();
         }
 
@@ -71,7 +74,7 @@ public abstract class TableConfig<T> {
                     return;
                 }
                 ColumnConfig columnConfig = allFieldColumnConfigMapper.get(field.getName());
-                if(null != columnConfig){
+                if (null != columnConfig) {
                     columnConfig.setField(field);
                 }
             }
@@ -192,11 +195,21 @@ public abstract class TableConfig<T> {
         return deleteStatement;
     }
 
-    public abstract void bindInsertArgs(T model, List<Object> insertArgs);
+    private List<ColumnConfig> insertColumnConfigs;
 
-    public abstract void bindUpdateArgs(T model, List<Object> updateArgs);
+    public List<ColumnConfig> getInsertColumnConfigs() {
+        if (null == insertColumnConfigs) {
+            insertColumnConfigs = SqlUtil.getInsertColumnConfigs(this);
+        }
+        return insertColumnConfigs;
+    }
 
-    public abstract void bindPkArgs(T model, List<Object> pkArgs);
+    //    public abstract void bindInsertArgs(T model, List<Object> insertArgs);
+    public abstract int bindInsertArgs(T model, RapidORMSQLiteStatementDelegate statement, int indexOffset);
+
+    public abstract int bindUpdateArgs(T model, RapidORMSQLiteStatementDelegate statement, int indexOffset);
+
+    public abstract int bindPkArgs(T model, RapidORMSQLiteStatementDelegate statement, int indexOffset);
 
     public abstract T parseFromCursor(Cursor cursor);
 

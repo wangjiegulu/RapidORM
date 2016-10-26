@@ -149,38 +149,47 @@ public class TableEntry {
      * Implementation methods of PropertyMethod interface.
      */
     private void implementModelPropertyMethods(TypeSpec.Builder result) {
+        ClassName sqliteStatementDelegateTypeName = ClassName.bestGuess(GuessClass.SQLITE_STATEMENT_DELEGATE);
+
+
         // bindInsertArgs
         MethodSpec.Builder bindInsertArgsMethod = MethodSpec.methodBuilder(GuessClass.ModelProperty.METHOD_NAME_BIND_INSERT_ARGS)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(void.class)
+                .returns(int.class)
                 .addParameter(mSourceClassEleTypeName, "model")
-                .addParameter(ParameterizedTypeName.get(
-                        ClassName.bestGuess(List.class.getCanonicalName()),
-                        ClassName.bestGuess(Object.class.getCanonicalName())
-                ), "insertArgs");
+//                .addParameter(ParameterizedTypeName.get(
+//                        ClassName.bestGuess(List.class.getCanonicalName()),
+//                        ClassName.bestGuess(Object.class.getCanonicalName())
+//                ), "insertArgs");
+                .addParameter(sqliteStatementDelegateTypeName, "statement")
+                .addParameter(int.class, "indexOffset");
 
         // bindUpdateArgs
         MethodSpec.Builder bindUpdateArgsMethod = MethodSpec.methodBuilder(GuessClass.ModelProperty.METHOD_NAME_BIND_UPDATE_ARGS)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(void.class)
+                .returns(int.class)
                 .addParameter(mSourceClassEleTypeName, "model")
-                .addParameter(ParameterizedTypeName.get(
-                        ClassName.bestGuess(List.class.getCanonicalName()),
-                        ClassName.bestGuess(Object.class.getCanonicalName())
-                ), "updateArgs");
+//                .addParameter(ParameterizedTypeName.get(
+//                        ClassName.bestGuess(List.class.getCanonicalName()),
+//                        ClassName.bestGuess(Object.class.getCanonicalName())
+//                ), "updateArgs");
+                .addParameter(sqliteStatementDelegateTypeName, "statement")
+                .addParameter(int.class, "indexOffset");
 
         // bindPkArgs
         MethodSpec.Builder bindPkArgsMethod = MethodSpec.methodBuilder(GuessClass.ModelProperty.METHOD_NAME_BIND_PK_ARGS)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(void.class)
+                .returns(int.class)
                 .addParameter(mSourceClassEleTypeName, "model")
-                .addParameter(ParameterizedTypeName.get(
-                        ClassName.bestGuess(List.class.getCanonicalName()),
-                        ClassName.bestGuess(Object.class.getCanonicalName())
-                ), "pkArgs");
+//                .addParameter(ParameterizedTypeName.get(
+//                        ClassName.bestGuess(List.class.getCanonicalName()),
+//                        ClassName.bestGuess(Object.class.getCanonicalName())
+//                ), "pkArgs");
+                .addParameter(sqliteStatementDelegateTypeName, "statement")
+                .addParameter(int.class, "indexOffset");
 
         // parseFromCursor
         MethodSpec.Builder parseFromCursorMethod = MethodSpec.methodBuilder(GuessClass.ModelProperty.METHOD_NAME_PARSE_FROM_CURSOR)
@@ -229,6 +238,9 @@ public class TableEntry {
             }
         }
 
+        bindInsertArgsMethod.addStatement("return indexOffset");
+        bindUpdateArgsMethod.addStatement("return indexOffset");
+        bindPkArgsMethod.addStatement("return indexOffset");
         parseFromCursorMethod.addStatement("return model");
 
         result.addMethod(bindInsertArgsMethod.build());
@@ -254,33 +266,82 @@ public class TableEntry {
     }
 
     private void bindInsertArgsStatement(MethodSpec.Builder bindInsertArgsMethod, ColumnEntry columnEntry, String fieldSimpleName) {
+        bindInsertArgsMethod.addStatement("indexOffset++");
         bindInsertArgsMethod.addStatement("$T $L = model.$L", columnEntry.getFieldColumnTypeName(), fieldSimpleName, fieldSimpleName);
         TypeName typeName = columnEntry.getFieldColumnTypeName();
-        if (typeName.isPrimitive()) {
-            bindInsertArgsMethod.addStatement("insertArgs.add($L" + (isBoolean(typeName) ? " ? 1 : 0" : "") + ")", fieldSimpleName);
-        } else {
-            bindInsertArgsMethod.addStatement("insertArgs.add(null == $L ? null : $L " + (isBoolean(typeName) ? " ? 1 : 0" : "") + ")", fieldSimpleName, fieldSimpleName);
-        }
+        bindToStatement(bindInsertArgsMethod, columnEntry, typeName, fieldSimpleName);
     }
 
     private void bindPkArgsStatement(MethodSpec.Builder bindPkArgsMethod, ColumnEntry columnEntry, String fieldSimpleName) {
+        bindPkArgsMethod.addStatement("indexOffset++");
         bindPkArgsMethod.addStatement("$T $L = model.$L", columnEntry.getFieldColumnTypeName(), fieldSimpleName, fieldSimpleName);
         TypeName typeName = columnEntry.getFieldColumnTypeName();
-        if (typeName.isPrimitive()) {
-            bindPkArgsMethod.addStatement("pkArgs.add($L" + (isBoolean(typeName) ? " ? 1 : 0" : "") + ")", fieldSimpleName);
-        } else {
-            bindPkArgsMethod.addStatement("pkArgs.add(null == $L ? null : $L" + (isBoolean(typeName) ? " ? 1 : 0" : "") + ")", fieldSimpleName, fieldSimpleName);
-        }
+        bindToStatement(bindPkArgsMethod, columnEntry, typeName, fieldSimpleName);
     }
 
     private void bindUpdateArgsStatement(MethodSpec.Builder bindUpdateArgsMethod, ColumnEntry columnEntry, String fieldSimpleName) {
+        bindUpdateArgsMethod.addStatement("indexOffset++");
         bindUpdateArgsMethod.addStatement("$T $L = model.$L", columnEntry.getFieldColumnTypeName(), fieldSimpleName, fieldSimpleName);
         TypeName typeName = columnEntry.getFieldColumnTypeName();
-        if (typeName.isPrimitive()) {
-            bindUpdateArgsMethod.addStatement("updateArgs.add($L" + (isBoolean(typeName) ? " ? 1 : 0" : "") + ")", fieldSimpleName);
-        } else {
-            bindUpdateArgsMethod.addStatement("updateArgs.add(null == $L ? null : $L" + (isBoolean(typeName) ? " ? 1 : 0" : "") + ")", fieldSimpleName, fieldSimpleName);
+        bindToStatement(bindUpdateArgsMethod, columnEntry, typeName, fieldSimpleName);
+    }
+
+    private String bindToStatement(MethodSpec.Builder bindArgsMethod, ColumnEntry columnEntry, TypeName typeName, String fieldSimpleName) {
+        switch (columnEntry.getDataType()) {
+            case "Long":
+            case "Int":
+            case "Short":
+                if (typeName.isPrimitive()) {
+                    bindArgsMethod.addStatement("statement.bindLong(indexOffset, $L" + (isBoolean(typeName) ? " ? 1 : 0" : "") + ")", fieldSimpleName);
+                } else {
+                    bindArgsMethod.beginControlFlow("if (null == $L)", fieldSimpleName);
+                    bindArgsMethod.addStatement("statement.bindNull(indexOffset)");
+                    bindArgsMethod.nextControlFlow("else ");
+                    bindArgsMethod.addStatement("statement.bindLong(indexOffset, $L" + (isBoolean(typeName) ? " ? 1 : 0" : "") + ")", fieldSimpleName);
+                    bindArgsMethod.endControlFlow();
+                }
+                break;
+            case "Float":
+//                break;
+            case "Double":
+                if (typeName.isPrimitive()) {
+                    bindArgsMethod.addStatement("statement.bindDouble(indexOffset, $L)", fieldSimpleName);
+                } else {
+                    bindArgsMethod.beginControlFlow("if (null == $L)", fieldSimpleName);
+                    bindArgsMethod.addStatement("statement.bindNull(indexOffset)");
+                    bindArgsMethod.nextControlFlow("else ");
+                    bindArgsMethod.addStatement("statement.bindDouble(indexOffset, $L)", fieldSimpleName);
+                    bindArgsMethod.endControlFlow();
+                }
+                break;
+            case "Blob":
+                if (typeName.isPrimitive()) {
+                    bindArgsMethod.addStatement("statement.bindBlob(indexOffset, $L)", fieldSimpleName);
+                } else {
+                    bindArgsMethod.beginControlFlow("if (null == $L)", fieldSimpleName);
+                    bindArgsMethod.addStatement("statement.bindNull(indexOffset)");
+                    bindArgsMethod.nextControlFlow("else ");
+                    bindArgsMethod.addStatement("statement.bindBlob(indexOffset, $L)", fieldSimpleName);
+                    bindArgsMethod.endControlFlow();
+                }
+
+                break;
+            case "String":
+                bindArgsMethod.beginControlFlow("if (null == $L)", fieldSimpleName);
+                bindArgsMethod.addStatement("statement.bindNull(indexOffset)");
+                bindArgsMethod.nextControlFlow("else ");
+                bindArgsMethod.addStatement("statement.bindString(indexOffset, $L)", fieldSimpleName);
+                bindArgsMethod.endControlFlow();
+                break;
+            default:
+                bindArgsMethod.beginControlFlow("if (null == $L)", fieldSimpleName);
+                bindArgsMethod.addStatement("statement.bindNull(indexOffset)");
+                bindArgsMethod.nextControlFlow("else ");
+                bindArgsMethod.addStatement("statement.bindString(indexOffset, String.valueOf($L))", fieldSimpleName);
+                bindArgsMethod.endControlFlow();
+                break;
         }
+        return null;
     }
 
 

@@ -5,11 +5,13 @@ import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.connection.DatabaseProcessor;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
+import com.wangjie.rapidorm.core.delegate.sqlitestatement.RapidORMSQLiteStatementDelegate;
 import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
+import com.wangjie.rapidorm.util.TypeUtil;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
 import android.database.Cursor;
@@ -17,7 +19,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.lang.reflect.Field;
-import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,145 +30,133 @@ import java.util.List;
  */
 public class BaseDaoImpl<T> implements BaseDao<T> {
     private static final String TAG = BaseDaoImpl.class.getSimpleName();
-    protected final byte[] LOCK = new byte[0];
-//    private final ReadWriteLock LOCK = new ReentrantReadWriteLock();
+//    protected final byte[] LOCK = new byte[0];
 
-    final protected Class<T> clazz;
-    protected TableConfig<T> tableConfig;
-    final protected String insertStatement;
-    final protected String updateStatement;
-    final protected String deleteStatement;
+    protected final Class<T> clazz;
+    protected final TableConfig<T> tableConfig;
+    protected final String insertStatement;
+    protected final String updateStatement;
+    protected final String deleteStatement;
 
-    public BaseDaoImpl(Class<T> clazz) {
-        this.clazz = clazz;
-        this.tableConfig = DatabaseProcessor.getInstance().getTableConfig(clazz);
-        insertStatement = tableConfig.getInsertStatement().getStatement();
-        updateStatement = tableConfig.getUpdateStatement().getStatement();
+    private RapidORMSQLiteStatementDelegate insertStmt;
+    private RapidORMSQLiteStatementDelegate updateStmt;
+        private RapidORMSQLiteStatementDelegate delegateStmt;
+
+        public BaseDaoImpl(Class<T> clazz) {
+            this.clazz = clazz;
+            this.tableConfig = DatabaseProcessor.getInstance().getTableConfig(clazz);
+            insertStatement = tableConfig.getInsertStatement().getStatement();
+            updateStatement = tableConfig.getUpdateStatement().getStatement();
         deleteStatement = tableConfig.getDeleteStatement().getStatement();
 
-//        if (tableConfig.isWithoutReflection()) {
-//            iModelProperty = ModelPropertyFactory.getMapper(tableConfig.getPropertyClazz());
-//        }
+        try {
+            RapidORMSQLiteDatabaseDelegate db = getDatabase();
+            insertStmt = db.compileStatement(insertStatement);
+            updateStmt = db.compileStatement(updateStatement);
+            delegateStmt = db.compileStatement(deleteStatement);
+        } catch (Exception e) {
+            throw new RapidORMRuntimeException(e);
+        }
     }
 
     @Override
     public void insert(@NonNull final T model) throws Exception {
         final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
-            synchronized (LOCK) {
-                executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
+            synchronized (tableConfig) {
+                insertInternal(model);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-                    synchronized (LOCK) {
-                        executeInsert(model, db, SqlUtil.getInsertColumnConfigs(tableConfig));
-                    }
+//                    synchronized (tableConfig) {
+                    insertInternal(model);
+//                    }
                 }
             });
         }
     }
 
-    protected void executeInsert(@NonNull T model, RapidORMSQLiteDatabaseDelegate db, List<ColumnConfig> insertColumnConfigs) throws Exception {
-        Object[] args;
-//        if (null != iModelProperty) {
-        List<Object> argList = new ArrayList<>();
-//            args = new Object[insertColumnConfigs.size()];
-        tableConfig.bindInsertArgs(model, argList);
-        args = argList.toArray();
-//        } else {
-//            args = generateArgs(model, insertColumnConfigs).toArray();
-//        }
+    protected void insertInternal(@NonNull T model) throws Exception {
+        insertStmt.clearBindings();
+        tableConfig.bindInsertArgs(model, insertStmt, 0);
 
         if (RapidORMConfig.DEBUG)
-            Log.i(TAG, "executeInsert ==> sql: " + insertStatement + " >> args: " + Arrays.toString(args));
+            Log.i(TAG, "insertInternal ==> sql: " + insertStatement + " >> model: " + model);
 
-        db.execSQL(insertStatement, args);
+        insertStmt.executeInsert();
     }
 
     @Override
     public void update(@NonNull final T model) throws Exception {
         final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
-            synchronized (LOCK) {
-                executeUpdate(model, db);
+            synchronized (tableConfig) {
+                updateInternal(model);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-                    synchronized (LOCK) {
-                        executeUpdate(model, db);
-                    }
+//                    synchronized (tableConfig) {
+                    updateInternal(model);
+//                    }
                 }
             });
         }
     }
 
-    protected void executeUpdate(T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
-        Object[] args;
-//        if (null != iModelProperty) {
-        List<Object> argList = new ArrayList<>();
-        tableConfig.bindUpdateArgs(model, argList);
-        tableConfig.bindPkArgs(model, argList);
-        args = argList.toArray();
-//        } else {
-//            List<Object> argList = generateArgs(model, tableConfig.getNoPkColumnConfigs());
-//            argList.addAll(generateArgs(model, tableConfig.getPkColumnConfigs()));
-//            args = argList.toArray();
-//        }
+    protected void updateInternal(T model) throws Exception {
+        updateStmt.clearBindings();
+        tableConfig.bindUpdateArgs(model, updateStmt, 0);
 
         if (RapidORMConfig.DEBUG)
-            Log.i(TAG, "executeUpdate ==> sql: " + updateStatement + " >> args: " + Arrays.toString(args));
+            Log.i(TAG, "updateInternal ==> sql: " + updateStatement + " >> model: " + model);
 
-        db.execSQL(updateStatement, args);
+        updateStmt.executeUpdateDelete();
     }
 
     @Override
     public void delete(@NonNull final T model) throws Exception {
         final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
-            synchronized (LOCK) {
-                executeDelete(model, db);
+            synchronized (tableConfig) {
+                deleteInternal(model);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-                    synchronized (LOCK) {
-                        executeDelete(model, db);
-                    }
+//                    synchronized (tableConfig) {
+                    deleteInternal(model);
+//                    }
                 }
             });
         }
     }
 
-    protected void executeDelete(@NonNull T model, RapidORMSQLiteDatabaseDelegate db) throws Exception {
+    protected void deleteInternal(@NonNull T model) throws Exception {
         List<ColumnConfig> pkColumnConfigs = tableConfig.getPkColumnConfigs();
         if (null == pkColumnConfigs || 0 == pkColumnConfigs.size()) {
             Log.e(TAG, "The table [" + tableConfig.getTableName() + "] has no primary key column!");
             return;
         }
 
-        Object[] args;
-//        if (null != iModelProperty) {
-        List<Object> argList = new ArrayList<>();
-        tableConfig.bindPkArgs(model, argList);
-        args = argList.toArray();
-//        } else {
-//            args = generateArgs(model, pkColumnConfigs).toArray();
-//        }
+        delegateStmt.clearBindings();
+        tableConfig.bindPkArgs(model, delegateStmt, 0);
 
         if (RapidORMConfig.DEBUG)
-            Log.i(TAG, "executeDelete ==> sql: " + deleteStatement + " >> args: " + Arrays.toString(args));
+            Log.i(TAG, "deleteInternal ==> sql: " + deleteStatement + " >> model: " + model);
 
-        db.execSQL(deleteStatement, args);
+        delegateStmt.executeUpdateDelete();
+
     }
 
+    @Deprecated
     private List<Object> generateArgs(@NonNull T model, List<ColumnConfig> columnConfigs) {
         List<Object> args = new ArrayList<>();
         for (ColumnConfig columnConfig : columnConfigs) {
@@ -187,28 +176,26 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     public void deleteAll() throws Exception {
         final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
-            synchronized (LOCK) {
-                executeDeleteAll(db);
+            synchronized (tableConfig) {
+                deleteAllInternal(db);
             }
         } else {
             // Do TX to acquire a connection before locking the stmt to avoid deadlocks
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
-                public void call() {
-                    try {
-                        executeDeleteAll(db);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                public void call() throws Exception {
+//                    synchronized (tableConfig) {
+                    deleteAllInternal(db);
+//                    }
                 }
             });
         }
     }
 
-    private void executeDeleteAll(RapidORMSQLiteDatabaseDelegate db) throws Exception {
+    private void deleteAllInternal(RapidORMSQLiteDatabaseDelegate db) throws Exception {
         String sql = SqlUtil.generateSqlDeleteAll(tableConfig);
         if (RapidORMConfig.DEBUG)
-            Log.i(TAG, "executeDeleteAll ==> sql: " + sql);
+            Log.i(TAG, "deleteAllInternal ==> sql: " + sql);
         db.execSQL(sql);
     }
 
@@ -219,7 +206,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     @Override
     public List<T> queryAll() throws Exception {
-        String sql = "SELECT * FROM " + tableConfig.getTableName();
+        String sql = SqlUtil.generateSqlQueryAll(tableConfig);
+        if (RapidORMConfig.DEBUG)
+            Log.i(TAG, "queryAll ==> sql: " + sql);
         return rawQuery(sql, null);
     }
 
@@ -235,22 +224,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         try {
             cursor = db.rawQuery(sql, selectionArgs);
             while (cursor.moveToNext()) {
-                T obj;
-//                if (null != iModelProperty) {
-                obj = tableConfig.parseFromCursor(cursor);
-//                } else {
-//                    obj = clazz.newInstance();
-//                    List<ColumnConfig> allColumnConfigs = tableConfig.getAllColumnConfigs();
-//                    for (ColumnConfig columnConfig : allColumnConfigs) {
-//                        Field field = columnConfig.getField();
-//                        field.setAccessible(true);
-//                        int index = cursor.getColumnIndex(columnConfig.getColumnName());
-//                        if (-1 != index) {
-//                            field.set(obj, getObject(cursor, field.getType(), index));
-//                        }
-//                    }
-//                }
-                resultList.add(obj);
+                resultList.add(tableConfig.parseFromCursor(cursor));
             }
         } catch (Exception ex) {
             Log.e(TAG, "", ex);
@@ -264,7 +238,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     public void rawExecute(final String sql, final Object[] bindArgs) throws Exception {
         final RapidORMSQLiteDatabaseDelegate db = getDatabase();
         if (db.isDbLockedByCurrentThread()) {
-            synchronized (LOCK) {
+            synchronized (tableConfig) {
                 rawExecute(db, sql, bindArgs);
             }
         } else {
@@ -272,7 +246,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
+//                    synchronized (tableConfig) {
                     rawExecute(db, sql, bindArgs);
+//                    }
                 }
             });
         }
@@ -305,9 +281,8 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         executeInTx(db, new RapidOrmFunc1() {
             @Override
             public void call() throws Exception {
-                List<ColumnConfig> insertColumnConfigs = SqlUtil.getInsertColumnConfigs(tableConfig);
                 for (T model : models) {
-                    executeInsert(model, db, insertColumnConfigs);
+                    insertInternal(model);
                 }
             }
         });
@@ -326,7 +301,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             @Override
             public void call() throws Exception {
                 for (T model : models) {
-                    executeUpdate(model, db);
+                    updateInternal(model);
                 }
             }
         });
@@ -345,7 +320,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             @Override
             public void call() throws Exception {
                 for (T model : models) {
-                    executeDelete(model, db);
+                    deleteInternal(model);
                 }
             }
         });
@@ -359,9 +334,10 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         if (null == func1) {
             return;
         }
+
         db.beginTransaction();
         try {
-            synchronized (LOCK) {
+            synchronized (tableConfig) {
                 func1.call();
             }
             db.setTransactionSuccessful();
@@ -375,10 +351,10 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         executeInTx(null, func1);
     }
 
-
     public RapidORMSQLiteDatabaseDelegate getDatabase() {
         return DatabaseProcessor.getInstance().getDb();
     }
+
 
     /**
      * Close cursor safely
@@ -393,25 +369,26 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         return SqlUtil.convertValue(field.get(model));
     }
 
+    @Deprecated
     protected Object getObject(Cursor cursor, Class fieldType, int index) {
         if (null == cursor) {
             return null;
         }
         if (String.class == fieldType) {
             return cursor.getString(index);
-        } else if (Long.class == fieldType || long.class == fieldType) {
+        } else if (TypeUtil.isLongIncludePrimitive(fieldType)) {
             return cursor.isNull(index) ? null : cursor.getLong(index);
-        } else if (Integer.class == fieldType || int.class == fieldType) {
+        } else if (TypeUtil.isIntegerIncludePrimitive(fieldType)) {
             return cursor.isNull(index) ? null : cursor.getInt(index);
-        } else if (Short.class == fieldType || short.class == fieldType) {
+        } else if (TypeUtil.isShortIncludePrimitive(fieldType)) {
             return cursor.isNull(index) ? null : cursor.getShort(index);
-        } else if (Double.class == fieldType || double.class == fieldType) {
+        } else if (TypeUtil.isDoubleIncludePrimitive(fieldType)) {
             return cursor.isNull(index) ? null : cursor.getDouble(index);
-        } else if (Float.class == fieldType || float.class == fieldType) {
+        } else if (TypeUtil.isFloatIncludePrimitive(fieldType)) {
             return cursor.isNull(index) ? null : cursor.getFloat(index);
-        } else if (Blob.class == fieldType) {
+        } else if (TypeUtil.isBlobIncludePrimitive(fieldType)) {
             return cursor.isNull(index) ? null : cursor.getBlob(index);
-        } else if (SqlUtil.isBoolean(fieldType)) {
+        } else if (TypeUtil.isBooleanIncludePrimitive(fieldType)) {
             return cursor.isNull(index) ? null : (cursor.getInt(index) == 1);
         }
         return null;
@@ -421,7 +398,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
      * Build a QueryBuilder
      */
     public QueryBuilder<T> queryBuilder() {
-        QueryBuilder<T> queryBuilder = new QueryBuilder<>();
+        QueryBuilder<T> queryBuilder = new QueryBuilder<>(this);
         queryBuilder.setTableConfig(tableConfig);
         return queryBuilder;
     }
@@ -430,7 +407,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
      * Build an UpdateBuilder
      */
     public UpdateBuilder<T> updateBuilder() {
-        UpdateBuilder<T> updateBuilder = new UpdateBuilder<>();
+        UpdateBuilder<T> updateBuilder = new UpdateBuilder<>(this);
         updateBuilder.setTableConfig(tableConfig);
         return updateBuilder;
     }
@@ -439,7 +416,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
      * Build a DeleteBuilder
      */
     public DeleteBuilder<T> deleteBuilder() {
-        DeleteBuilder<T> deleteBuilder = new DeleteBuilder<>();
+        DeleteBuilder<T> deleteBuilder = new DeleteBuilder<>(this);
         deleteBuilder.setTableConfig(tableConfig);
         return deleteBuilder;
     }

@@ -3,6 +3,7 @@ package com.wangjie.rapidorm.core.generate.statement.util;
 import android.support.annotation.NonNull;
 import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.TableConfig;
+import com.wangjie.rapidorm.util.TypeUtil;
 
 import java.util.List;
 
@@ -34,6 +35,10 @@ public class SqlUtil {
         return "DELETE FROM " + tableConfig.getTableName();
     }
 
+    public static <T> String generateSqlQueryAll(@NonNull TableConfig<T> tableConfig) {
+        return "SELECT * FROM " + tableConfig.getTableName();
+    }
+
     public static StringBuilder appendPlaceholders(StringBuilder builder, int count) {
         for (int i = 0; i < count; i++) {
             if (i < count - 1) {
@@ -49,15 +54,13 @@ public class SqlUtil {
         return builder.append("`").append(name).append("`");
     }
 
-    public static boolean isBoolean(Class<?> fieldType) {
-        return boolean.class == fieldType || Boolean.class == fieldType;
-    }
+
 
     public static Object convertValue(Object fieldValue){
         if(null == fieldValue){
             return null;
         }
-        if(isBoolean(fieldValue.getClass())){
+        if(TypeUtil.isBooleanIncludePrimitive(fieldValue.getClass())){
             return ((Boolean)fieldValue) ? 1 : 0;
         }
         return fieldValue;

@@ -13,11 +13,9 @@ public class GuessClass {
 
     public static final String COLUMN_CONFIG = "com.wangjie.rapidorm.core.config.ColumnConfig";
 
-
+    public static final String SQLITE_STATEMENT_DELEGATE = "com.wangjie.rapidorm.core.delegate.sqlitestatement.RapidORMSQLiteStatementDelegate";
 
     public static class ModelProperty {
-//        public static final String CLASS_NAME = "com.wangjie.rapidorm.core.generate.withoutreflection.IModelProperty";
-
         public static final String METHOD_NAME_BIND_INSERT_ARGS = "bindInsertArgs";
 
         public static final String METHOD_NAME_BIND_UPDATE_ARGS = "bindUpdateArgs";
@@ -25,7 +23,6 @@ public class GuessClass {
         public static final String METHOD_NAME_BIND_PK_ARGS = "bindPkArgs";
 
         public static final String METHOD_NAME_PARSE_FROM_CURSOR = "parseFromCursor";
-
 
     }
 

@@ -25,7 +25,6 @@ public class QueryBuilder<T> extends RapidBuilder {
             this.column = column;
             this.isAsc = isAsc;
         }
-
     }
 
     private List<String> selectColumns;
@@ -34,11 +33,15 @@ public class QueryBuilder<T> extends RapidBuilder {
     private TableConfig<T> tableConfig;
     private List<Object> values;
     private List<OrderCase> orderCase;
+    private boolean distinct;
 
-    public QueryBuilder() {
+    private BaseDao<T> dao;
+
+    public QueryBuilder(BaseDao<T> dao) {
         selectColumns = new ArrayList<>();
         values = new ArrayList<>();
         orderCase = new ArrayList<>();
+        this.dao = dao;
     }
 
     public QueryBuilder<T> setWhere(Where where) {
@@ -52,6 +55,11 @@ public class QueryBuilder<T> extends RapidBuilder {
 
     public QueryBuilder<T> setLimit(Integer limit) {
         this.limit = limit;
+        return this;
+    }
+
+    public QueryBuilder<T> setDistinct(boolean distinct) {
+        this.distinct = distinct;
         return this;
     }
 
@@ -94,6 +102,9 @@ public class QueryBuilder<T> extends RapidBuilder {
         values.clear();
 
         StringBuilder sql = new StringBuilder(" SELECT ");
+        if (distinct) {
+            sql.append(" DISTINCT ");
+        }
         sql.append(null == selectColumns || 0 == selectColumns.size() ? "*" : CollectionJoiner.join(selectColumns, ","));
         sql.append(" FROM ");
         SqlUtil.formatName(sql, tableConfig.getTableName());
@@ -123,10 +134,21 @@ public class QueryBuilder<T> extends RapidBuilder {
         return sql.toString();
     }
 
+    public List<T> query() throws Exception {
+        return dao.rawQuery(generateSql(), getValuesAsStringArray());
+    }
+
+    public T queryFirst() throws Exception {
+        List<T> list = dao.rawQuery(generateSql(), getValuesAsStringArray());
+        return null == list || 0 == list.size() ? null : list.get(0);
+    }
+
+    @Deprecated
     public List<T> query(BaseDao<T> baseDao) throws Exception {
         return baseDao.rawQuery(generateSql(), getValuesAsStringArray());
     }
 
+    @Deprecated
     public T queryFirst(BaseDao<T> baseDao) throws Exception {
         List<T> list = baseDao.rawQuery(generateSql(), getValuesAsStringArray());
         return null == list || 0 == list.size() ? null : list.get(0);

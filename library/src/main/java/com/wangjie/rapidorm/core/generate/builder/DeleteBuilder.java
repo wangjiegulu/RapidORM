@@ -18,8 +18,11 @@ public class DeleteBuilder<T> extends RapidBuilder {
     private List<Object> values;
     private TableConfig<T> tableConfig;
 
-    public DeleteBuilder() {
+    private BaseDao<T> dao;
+
+    public DeleteBuilder(BaseDao<T> dao) {
         values = new ArrayList<>();
+        this.dao = dao;
     }
 
     public Where getWhere() {
@@ -63,6 +66,11 @@ public class DeleteBuilder<T> extends RapidBuilder {
         return sql.toString();
     }
 
+    public void delete()throws Exception{
+        dao.rawExecute(generateSql(), getValuesAsObjectArray());
+    }
+
+    @Deprecated
     public void delete(BaseDao<T> baseDao)throws Exception{
         baseDao.rawExecute(generateSql(), getValuesAsObjectArray());
     }
