@@ -18,56 +18,6 @@ Android lightweight, high performance ORM framework.
 ### 1. Creating persistent class:
 
 ```java
-/**
- * Author: wangjie
- * Email: tiantian.china.2@gmail.com
- * Date: 6/25/15.
- */
-@Table
-public class Person implements Serializable {
-    @Column(primaryKey = true)
-    Integer id;
-
-    @Column(primaryKey = true, name = "type_id")
-    Integer typeId;
-
-    @Column
-    String name;
-
-    @Column
-    int age;
-
-    @Column
-    String address;
-
-    @Column
-    Long birth;
-
-    @Column
-    Boolean student;
-
-    @Column(name = "is_succeed")
-    boolean isSucceed;
-    
-    // getter/setter...
-}
-```
-
-### 2. Rebuild Project
-
-> Android Studio -> Build -> Rebuild Project
-
-After Build success, under the directory of main project `build/generated/source/apt/` will generate `Person_RORM` class, as follows:
-
-```java
-// GENERATED CODE BY RapidORM. DO NOT MODIFY! "2016-06-29 14:08:504", Source table: "com.wangjie.rapidorm.example.database.model.Person"
-package com.wangjie.rapidorm.example.database.model;
-
-import android.database.Cursor;
-import com.wangjie.rapidorm.core.config.ColumnConfig;
-import com.wangjie.rapidorm.core.config.TableConfig;
-import java.util.List;
-
 public class Person_RORM extends TableConfig<Person> {
   /**
    * Column name: "id", field name: {@link Person#id}
@@ -151,47 +101,114 @@ public class Person_RORM extends TableConfig<Person> {
   }
 
   @Override
-  public void bindInsertArgs(Person model, List<Object> insertArgs) {
+  public int bindInsertArgs(Person model, RapidORMSQLiteStatementDelegate statement, int indexOffset) {
+    indexOffset++;
     Integer id = model.id;
-    insertArgs.add(null == id ? null : id );
+    if (null == id) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindLong(indexOffset, id);
+    }
+    indexOffset++;
     Integer typeId = model.typeId;
-    insertArgs.add(null == typeId ? null : typeId );
+    if (null == typeId) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindLong(indexOffset, typeId);
+    }
+    indexOffset++;
     String name = model.name;
-    insertArgs.add(null == name ? null : name );
+    if (null == name) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindString(indexOffset, name);
+    }
+    indexOffset++;
     int age = model.age;
-    insertArgs.add(age);
+    statement.bindLong(indexOffset, age);
+    indexOffset++;
     String address = model.address;
-    insertArgs.add(null == address ? null : address );
+    if (null == address) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindString(indexOffset, address);
+    }
+    indexOffset++;
     Long birth = model.birth;
-    insertArgs.add(null == birth ? null : birth );
+    if (null == birth) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindLong(indexOffset, birth);
+    }
+    indexOffset++;
     Boolean student = model.student;
-    insertArgs.add(null == student ? null : student  ? 1 : 0);
+    if (null == student) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindLong(indexOffset, student ? 1 : 0);
+    }
+    indexOffset++;
     boolean isSucceed = model.isSucceed;
-    insertArgs.add(isSucceed ? 1 : 0);
+    statement.bindLong(indexOffset, isSucceed ? 1 : 0);
+    return indexOffset;
   }
 
   @Override
-  public void bindUpdateArgs(Person model, List<Object> updateArgs) {
+  public int bindUpdateArgs(Person model, RapidORMSQLiteStatementDelegate statement, int indexOffset) {
+    indexOffset++;
     String name = model.name;
-    updateArgs.add(null == name ? null : name);
+    if (null == name) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindString(indexOffset, name);
+    }
+    indexOffset++;
     int age = model.age;
-    updateArgs.add(age);
+    statement.bindLong(indexOffset, age);
+    indexOffset++;
     String address = model.address;
-    updateArgs.add(null == address ? null : address);
+    if (null == address) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindString(indexOffset, address);
+    }
+    indexOffset++;
     Long birth = model.birth;
-    updateArgs.add(null == birth ? null : birth);
+    if (null == birth) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindLong(indexOffset, birth);
+    }
+    indexOffset++;
     Boolean student = model.student;
-    updateArgs.add(null == student ? null : student ? 1 : 0);
+    if (null == student) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindLong(indexOffset, student ? 1 : 0);
+    }
+    indexOffset++;
     boolean isSucceed = model.isSucceed;
-    updateArgs.add(isSucceed ? 1 : 0);
+    statement.bindLong(indexOffset, isSucceed ? 1 : 0);
+    return indexOffset;
   }
 
   @Override
-  public void bindPkArgs(Person model, List<Object> pkArgs) {
+  public int bindPkArgs(Person model, RapidORMSQLiteStatementDelegate statement, int indexOffset) {
+    indexOffset++;
     Integer id = model.id;
-    pkArgs.add(null == id ? null : id);
+    if (null == id) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindLong(indexOffset, id);
+    }
+    indexOffset++;
     Integer typeId = model.typeId;
-    pkArgs.add(null == typeId ? null : typeId);
+    if (null == typeId) {
+      statement.bindNull(indexOffset);
+    } else {
+      statement.bindLong(indexOffset, typeId);
+    }
+    return indexOffset;
   }
 
   @Override
