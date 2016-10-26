@@ -1,2 +1,2 @@
-include ':example', ':library'
+include ':example', ':library', ':library-api', ':library-compiler'
 

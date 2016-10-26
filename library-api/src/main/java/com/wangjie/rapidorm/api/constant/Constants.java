@@ -1,4 +1,4 @@
-package com.wangjie.rapidorm.constants;
+package com.wangjie.rapidorm.api.constant;
 
 /**
  * Author: wangjie

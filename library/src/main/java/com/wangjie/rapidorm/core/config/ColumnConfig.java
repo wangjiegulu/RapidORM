@@ -8,18 +8,41 @@ import java.lang.reflect.Field;
  * Date: 6/25/15.
  */
 public class ColumnConfig {
+    /**
+     * Field NOT NULL only when `{@link com.wangjie.rapidorm.constants.RapidORMConfig#BIND_FIELD_COLUMN_WITH_REFLECTION}`
+     * is TRUE, default is null.
+     */
     private Field field;
+    /**
+     * Column name of database
+     */
     private String columnName;
+    /**
+     * Whether it is a primary key
+     */
     private boolean primaryKey;
+    /**
+     * Whether it is autoincrement
+     * It is only works when this column is the one and only one primary key
+     */
     private boolean autoincrement;
+    /**
+     * Default value, Not recommended
+     */
     private String defaultValue;
+    /**
+     * Whether it is not null
+     */
     private boolean notNull;
-
+    /**
+     * Whether it is unique constraint
+     */
     private boolean unique;
     private boolean uniqueCombo;
     private boolean index;
 
-    private int ordinals;
+    //    private int ordinals;
+    private String dbType;
 
 //    private int kpSequence;
 //    private int noKpSequence;
@@ -96,11 +119,19 @@ public class ColumnConfig {
         this.field = field;
     }
 
-    public void setOrdinals(int ordinals) {
-        this.ordinals = ordinals;
+//    public void setOrdinals(int ordinals) {
+//        this.ordinals = ordinals;
+//    }
+//
+//    public int getOrdinals() {
+//        return ordinals;
+//    }
+
+    public String getDbType() {
+        return dbType;
     }
 
-    public int getOrdinals() {
-        return ordinals;
+    public void setDbType(String dbType) {
+        this.dbType = dbType;
     }
 }

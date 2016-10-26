@@ -30,9 +30,12 @@ public class UpdateBuilder<T> extends RapidBuilder {
     private List<Object> values;
     private TableConfig<T> tableConfig;
 
-    public UpdateBuilder() {
+    private BaseDao<T> dao;
+
+    public UpdateBuilder(BaseDao<T> dao) {
         updateCases = new ArrayList<>();
         values = new ArrayList<>();
+        this.dao = dao;
     }
 
     public TableConfig<T> getTableConfig() {
@@ -93,6 +96,11 @@ public class UpdateBuilder<T> extends RapidBuilder {
         return sql.toString();
     }
 
+    public void update() throws Exception{
+        dao.rawExecute(generateSql(), getValuesAsStringArray());
+    }
+
+    @Deprecated
     public void update(BaseDao<T> baseDao) throws Exception{
         baseDao.rawExecute(generateSql(), getValuesAsStringArray());
     }

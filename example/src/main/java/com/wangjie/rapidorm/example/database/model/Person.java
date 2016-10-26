@@ -1,8 +1,7 @@
 package com.wangjie.rapidorm.example.database.model;
 
-import com.wangjie.rapidorm.annotations.Column;
-import com.wangjie.rapidorm.annotations.Table;
-import com.wangjie.rapidorm.example.database.model.config.PersonProperty;
+import com.wangjie.rapidorm.api.annotations.Column;
+import com.wangjie.rapidorm.api.annotations.Table;
 
 import java.io.Serializable;
 
@@ -11,29 +10,32 @@ import java.io.Serializable;
  * Email: tiantian.china.2@gmail.com
  * Date: 6/25/15.
  */
-@Table(propertyClazz = PersonProperty.class)
-public class Person implements Serializable{
+@Table
+public class Person implements Serializable {
 
     @Column(primaryKey = true)
-    private Integer id;
+    Integer id;
 
-    @Column(primaryKey = true)
-    private Integer typeId;
-
-    @Column
-    private String name;
+    @Column(primaryKey = true, name = "type_id")
+    Integer typeId;
 
     @Column
-    private Integer age;
+    String name;
 
     @Column
-    private String address;
+    int age;
 
     @Column
-    private Long birth;
+    String address;
 
     @Column
-    private Boolean student;
+    Long birth;
+
+    @Column
+    Boolean student;
+
+    @Column(name = "is_succeed")
+    boolean isSucceed;
 
     public Integer getId() {
         return id;
@@ -41,6 +43,14 @@ public class Person implements Serializable{
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Integer typeId) {
+        this.typeId = typeId;
     }
 
     public String getName() {
@@ -51,11 +61,11 @@ public class Person implements Serializable{
         this.name = name;
     }
 
-    public Integer getAge() {
+    public int getAge() {
         return age;
     }
 
-    public void setAge(Integer age) {
+    public void setAge(int age) {
         this.age = age;
     }
 
@@ -75,20 +85,20 @@ public class Person implements Serializable{
         this.birth = birth;
     }
 
-    public Integer getTypeId() {
-        return typeId;
-    }
-
-    public void setTypeId(Integer typeId) {
-        this.typeId = typeId;
-    }
-
-    public Boolean isStudent() {
+    public Boolean getStudent() {
         return student;
     }
 
     public void setStudent(Boolean student) {
         this.student = student;
+    }
+
+    public boolean isSucceed() {
+        return isSucceed;
+    }
+
+    public void setSucceed(boolean succeed) {
+        isSucceed = succeed;
     }
 
     @Override
@@ -101,7 +111,7 @@ public class Person implements Serializable{
                 ", address='" + address + '\'' +
                 ", birth=" + birth +
                 ", student=" + student +
+                ", isSucceed=" + isSucceed +
                 '}';
     }
-
 }

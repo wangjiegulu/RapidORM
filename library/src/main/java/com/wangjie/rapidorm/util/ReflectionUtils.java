@@ -19,7 +19,7 @@ public abstract class ReflectionUtils {
     }
 
     /**
-     * 遍历所有field
+     * Iterate over all fields with reflection
      * @param clazz
      * @param fieldCallback
      */
@@ -35,7 +35,7 @@ public abstract class ReflectionUtils {
     }
 
     /**
-     * 遍历所有field，包括父类
+     * Iterate over all fields with reflection，include super class
      * @param clazz
      * @param fieldCallback
      */

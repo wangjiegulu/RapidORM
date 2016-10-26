@@ -1,6 +1,7 @@
-package com.wangjie.rapidorm.annotations;
+package com.wangjie.rapidorm.api.annotations;
 
-import com.wangjie.rapidorm.constants.Constants;
+
+import com.wangjie.rapidorm.api.constant.Constants;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,6 +16,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Table {
+    /**
+     * Table name
+     * @return
+     */
     String name() default Constants.AnnotationNotSetValue.TABLE_NAME;
-    Class propertyClazz() default Object.class;
 }

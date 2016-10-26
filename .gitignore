@@ -38,3 +38,4 @@ proguard/
 *.log
 .idea/
 *.iml
+/captures

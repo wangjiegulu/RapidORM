@@ -1,6 +1,7 @@
 package com.wangjie.rapidorm.example.application;
 
-import com.wangjie.androidbucket.application.ABApplication;
+import android.app.Application;
+
 import com.wangjie.rapidorm.constants.RapidORMConfig;
 
 /**
@@ -8,10 +9,13 @@ import com.wangjie.rapidorm.constants.RapidORMConfig;
  * Email: tiantian.china.2@gmail.com
  * Date: 6/25/15.
  */
-public class MyApplication extends ABApplication{
+public class MyApplication extends Application {
+    public static MyApplication instance;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         RapidORMConfig.DEBUG = true;
     }
 }

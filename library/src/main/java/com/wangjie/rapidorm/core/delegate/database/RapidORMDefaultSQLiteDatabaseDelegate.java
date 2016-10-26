@@ -1,5 +1,8 @@
 package com.wangjie.rapidorm.core.delegate.database;
 
+import com.wangjie.rapidorm.core.delegate.sqlitestatement.RapidORMDefaultSQLiteStatementDelegate;
+import com.wangjie.rapidorm.core.delegate.sqlitestatement.RapidORMSQLiteStatementDelegate;
+
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -47,6 +50,11 @@ public class RapidORMDefaultSQLiteDatabaseDelegate extends RapidORMSQLiteDatabas
     @Override
     public void endTransaction() {
         db.endTransaction();
+    }
+
+    @Override
+    public RapidORMSQLiteStatementDelegate compileStatement(String sql) throws Exception {
+        return new RapidORMDefaultSQLiteStatementDelegate(db.compileStatement(sql));
     }
 
     @Override

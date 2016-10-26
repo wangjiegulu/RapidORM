@@ -1,6 +1,6 @@
-package com.wangjie.rapidorm.annotations;
+package com.wangjie.rapidorm.api.annotations;
 
-import com.wangjie.rapidorm.constants.Constants;
+import com.wangjie.rapidorm.api.constant.Constants;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
