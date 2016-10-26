@@ -251,8 +251,7 @@ protected void registerTableConfigMapper(HashMap<Class, TableConfig> tableConfig
 
 > `QueryBuilder`, `UpdateBuilder`, `DeleteBuilder`
 
-**PersonDaoImpl**:
-
+#### 4.1 QueryBuilder
 ```java
 public List<Person> findPersonsByWhere() throws Exception {
     return queryBuilder()
@@ -276,6 +275,45 @@ public List<Person> findPersonsByWhere() throws Exception {
 }
 ```
 
+#### 4.2 UpdateBuilder
+```java
+public void updatePerson() throws Exception {
+    updateBuilder()
+        .setWhere(
+            Where.and(
+                Where.like(Person_RORM.NAME, "%wangjie%"),
+                Where.lt(Person_RORM.ID, 200),
+                Where.or(
+                        Where.between(Person_RORM.AGE, 19, 39),
+                        Where.isNull(Person_RORM.ADDRESS)
+                ),
+                Where.eq(Person_RORM.TYPE_ID, 1)
+            )
+        )
+        .addUpdateColumn(Person_RORM.BIRTH, System.currentTimeMillis())
+        .addUpdateColumn(Person_RORM.ADDRESS, "New address")
+        .update(this);
+}
+```
+
+#### 4.3 DeleteBuilder
+```java
+public void deletePerson() throws Exception {
+    deleteBuilder()
+        .setWhere(
+            Where.and(
+                Where.like(Person_RORM.NAME, "%wangjie%"),
+                Where.lt(Person_RORM.ID, 200),
+                Where.or(
+                        Where.between(Person_RORM.AGE, 19, 39),
+                        Where.isNull(Person_RORM.ADDRESS)
+                ),
+                Where.eq(Person_RORM.TYPE_ID, 1)
+            )
+        )
+        .delete(this);
+}
+```
 
 License
 =======
