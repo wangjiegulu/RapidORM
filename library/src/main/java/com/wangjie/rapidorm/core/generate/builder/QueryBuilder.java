@@ -25,7 +25,6 @@ public class QueryBuilder<T> extends RapidBuilder {
             this.column = column;
             this.isAsc = isAsc;
         }
-
     }
 
     private List<String> selectColumns;
@@ -35,10 +34,13 @@ public class QueryBuilder<T> extends RapidBuilder {
     private List<Object> values;
     private List<OrderCase> orderCase;
 
-    public QueryBuilder() {
+    private BaseDao<T> dao;
+
+    public QueryBuilder(BaseDao<T> dao) {
         selectColumns = new ArrayList<>();
         values = new ArrayList<>();
         orderCase = new ArrayList<>();
+        this.dao = dao;
     }
 
     public QueryBuilder<T> setWhere(Where where) {
@@ -123,10 +125,21 @@ public class QueryBuilder<T> extends RapidBuilder {
         return sql.toString();
     }
 
+    public List<T> query() throws Exception {
+        return dao.rawQuery(generateSql(), getValuesAsStringArray());
+    }
+
+    public T queryFirst() throws Exception {
+        List<T> list = dao.rawQuery(generateSql(), getValuesAsStringArray());
+        return null == list || 0 == list.size() ? null : list.get(0);
+    }
+
+    @Deprecated
     public List<T> query(BaseDao<T> baseDao) throws Exception {
         return baseDao.rawQuery(generateSql(), getValuesAsStringArray());
     }
 
+    @Deprecated
     public T queryFirst(BaseDao<T> baseDao) throws Exception {
         List<T> list = baseDao.rawQuery(generateSql(), getValuesAsStringArray());
         return null == list || 0 == list.size() ? null : list.get(0);

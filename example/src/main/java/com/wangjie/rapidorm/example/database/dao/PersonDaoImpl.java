@@ -23,12 +23,12 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
                 .setWhere(getTestWhere())
                 .addOrder(Person_RORM.ID, false)
                 .addOrder(Person_RORM.NAME, true)
-                .setLimit(10).query(this);
+                .setLimit(10).query();
     }
 
     public void deletePerson() throws Exception {
         deleteBuilder()
-                .setWhere(getTestWhere()).delete(this);
+                .setWhere(getTestWhere()).delete();
     }
 
     public void updatePerson() throws Exception {
@@ -36,7 +36,7 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
         updateBuilder()
                 .setWhere(getTestWhere())
                 .addUpdateColumn(Person_RORM.BIRTH, now)
-                .addUpdateColumn(Person_RORM.ADDRESS, "address_" + now).update(this);
+                .addUpdateColumn(Person_RORM.ADDRESS, "address_" + now).update();
     }
 
     private Where getTestWhere() {
@@ -55,7 +55,7 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
     }
 
     public List<Person> findPersons() throws Exception {
-        return queryBuilder().addOrder(Person_RORM.ID, false).setLimit(10).query(this);
+        return queryBuilder().addOrder(Person_RORM.ID, false).setLimit(10).query();
     }
 
 }
