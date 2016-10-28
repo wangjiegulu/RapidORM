@@ -39,6 +39,7 @@ public class ColumnConfig {
      */
     private boolean unique;
     private boolean uniqueCombo;
+    @Deprecated
     private boolean index;
 
     //    private int ordinals;

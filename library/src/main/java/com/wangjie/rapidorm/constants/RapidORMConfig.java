@@ -15,6 +15,7 @@ public class RapidORMConfig {
      * Bind a field object to {@link com.wangjie.rapidorm.core.config.ColumnConfig} with
      * reflection if is true.
      */
+    @Deprecated
     public static boolean BIND_FIELD_COLUMN_WITH_REFLECTION = false;
 
 }

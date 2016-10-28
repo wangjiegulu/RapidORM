@@ -1,26 +1,20 @@
 package com.wangjie.rapidorm.compiler.objs;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 import com.wangjie.rapidorm.api.annotations.Column;
+import com.wangjie.rapidorm.api.annotations.Index;
 import com.wangjie.rapidorm.api.annotations.Table;
 import com.wangjie.rapidorm.api.constant.Constants;
 import com.wangjie.rapidorm.compiler.constants.GuessClass;
 import com.wangjie.rapidorm.compiler.util.LogUtil;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
 
 /**
  * Author: wangjie
@@ -36,11 +30,18 @@ public class TableEntry {
 
     private List<ColumnEntry> mColumnList = new ArrayList<>();
 
+    private List<ColumnEntry> mPkColumnList = new ArrayList<>();
+    private List<ColumnEntry> mNoPkColumnList = new ArrayList<>();
+
+    private String tableName;
+    private Table tableAnnotation;
+
     public TableEntry() {
     }
 
     public void setSourceClassEle(Element sourceClassEle) {
         mSourceClassEle = sourceClassEle;
+        tableAnnotation = mSourceClassEle.getAnnotation(Table.class);
         mSourceClassEleTypeName = ClassName.get(mSourceClassEle.asType());
     }
 
@@ -86,7 +87,6 @@ public class TableEntry {
 
         implementModelPropertyMethods(result);
 
-
         result.addMethod(constructorMethod.build());
 
         return JavaFile.builder(targetPackage, result.build())
@@ -105,7 +105,7 @@ public class TableEntry {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED);
 
-        parseAllConfigsMethod.addStatement("tableName = $S", parseTableName(mSourceClassEle.getSimpleName().toString(), mSourceClassEle.getAnnotation(Table.class)));
+        parseAllConfigsMethod.addStatement("tableName = $S", getTableName());
 
         for (ColumnEntry columnEntry : mColumnList) {
             Element element = columnEntry.getFieldColumnElement();
@@ -136,10 +136,10 @@ public class TableEntry {
                     }
                 }
                 parseAllConfigsMethod.addStatement("pkColumnConfigs.add($L)", columnConfigFieldName);
-//                mPkColumnList.add(columnEntry);
+                mPkColumnList.add(columnEntry);
             } else {
                 parseAllConfigsMethod.addStatement("noPkColumnConfigs.add($L)", columnConfigFieldName);
-//                mNoPkColumnList.add(columnEntry);
+                mNoPkColumnList.add(columnEntry);
             }
         }
         result.addMethod(parseAllConfigsMethod.build());
@@ -248,6 +248,10 @@ public class TableEntry {
         result.addMethod(bindPkArgsMethod.build());
         result.addMethod(parseFromCursorMethod.build());
 
+
+        implementCreateTableModelPropertyMethods(result);
+
+
     }
 
     private void parseFromCursorMethodStatement(MethodSpec.Builder parseFromCursorMethod, ColumnEntry columnEntry, String fieldSimpleName) {
@@ -344,6 +348,129 @@ public class TableEntry {
         return null;
     }
 
+
+    private void implementCreateTableModelPropertyMethods(TypeSpec.Builder result) {
+        // createTable part
+        MethodSpec.Builder createTableMethod = MethodSpec.methodBuilder(GuessClass.ModelProperty.METHOD_NAME_CREATE_TABLE)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(void.class)
+                .addException(Exception.class)
+                .addParameter(ClassName.bestGuess(GuessClass.SQLITE_DATABASE_DELEGATE), "db")
+                .addParameter(boolean.class, "ifNotExists");
+
+        createTableMethod.addStatement("String ifNotExistsConstraint = $L? $S : $S", "ifNotExists", "IF NOT EXISTS ", "");
+
+        String createTableStuff = "CREATE TABLE ";
+        StringBuilder createTableSql = new StringBuilder()
+                .append("`").append(getTableName()).append("`").append(" ( ");
+
+        boolean isPkMultiple = mPkColumnList.size() > 1;
+        for (int i = 0, len = mColumnList.size(); i < len; i++) {
+            ColumnEntry columnEntry = mColumnList.get(i);
+            Column column = columnEntry.getColumnAnnotation();
+            createTableSql.append("\n")
+                    .append("`").append(columnEntry.getColumnName()).append("`")
+                    .append(" ").append(columnEntry.getDbType());
+
+            if (!isPkMultiple && column.primaryKey()) {
+                createTableSql.append(" PRIMARY KEY ");
+            }
+
+            if (!isPkMultiple && column.autoincrement()) {
+                createTableSql.append(" AUTOINCREMENT ");
+            }
+
+            if (column.notNull()) {
+                createTableSql.append(" NOT NULL ");
+            }
+
+            if (column.unique()) {
+                createTableSql.append(" UNIQUE ");
+            }
+            String defaultValue;
+            if (!Constants.AnnotationNotSetValue.DEFAULT_VALUE.equals(defaultValue = column.defaultValue())) {
+                createTableSql.append(" DEFAULT ").append(defaultValue).append(" ");
+            }
+
+            if (i != len - 1) { // not last
+                createTableSql.append(",");
+            } else {
+                if (isPkMultiple) {
+                    addPrimaryKeyConstraints(mPkColumnList, createTableSql);
+                }
+            }
+        }
+
+        createTableSql.append(");");
+        createTableMethod.addStatement("db.execSQL($S + $L + $S)", createTableStuff, "ifNotExistsConstraint", createTableSql);
+
+        // index part
+        Index[] indices = tableAnnotation.indices();
+        if (indices.length > 0) {
+            for (Index index : indices) {
+                String value = index.value();
+                if (Constants.AnnotationNotSetValue.INDEX_VALUE.equals(value)) {
+                    continue;
+                }
+                String indexName = index.name();
+                createTableMethod.addStatement("db.execSQL($S + $L + $S)",
+                        index.unique() ? "CREATE UNIQUE INDEX " : "CREATE INDEX ",
+                        "ifNotExistsConstraint",
+                        (Constants.AnnotationNotSetValue.INDEX_NAME.equals(indexName) ?
+//                                "INDEX_" + value.replaceAll("[ ,]", "_").replaceAll("__+", "_").toUpperCase() : indexName) +
+                                "INDEX_" + value.replaceAll("( |,){2,}|( |,)", "_").toUpperCase() : indexName) +
+                        " ON `" + getTableName() + "`(\"" + value + "\");"
+                );
+            }
+        }
+
+
+
+
+        result.addMethod(createTableMethod.build());
+    }
+
+    // 添加主键约束
+    private void addPrimaryKeyConstraints(List<ColumnEntry> pkColumnList, StringBuilder sql) {
+        // Primary key Constraint
+        int pkCount = pkColumnList.size();
+        switch (pkCount) {
+            case 0: // No primary key
+                break;
+            case 1: // One primary key
+                ColumnEntry columnEntry = pkColumnList.get(0);
+                sql.append(",")
+                        .append("\n")
+                        .append(" PRIMARY KEY (").append(columnEntry.getColumnName()).append(")");
+                break;
+            default: // Multiple primary keys
+                sql.append(",")
+                        .append("\n")
+                        .append(" PRIMARY KEY (").append(joinPks(pkColumnList)).append(")");
+                break;
+        }
+    }
+
+    // 拼接多个主键
+    private String joinPks(List<ColumnEntry> pkColumnList) {
+        StringBuilder pks = new StringBuilder();
+        for (int i = 0, size = pkColumnList.size(); i < size; i++) {
+            pks.append(pkColumnList.get(i).getColumnName());
+            if (i != size - 1) {
+                pks.append(", ");
+            }
+        }
+        return pks.toString();
+    }
+
+
+    private String getTableName() {
+        if (null == tableName) {
+            tableName = parseTableName(mSourceClassEle.getSimpleName().toString(), tableAnnotation);
+        }
+        return tableName;
+    }
 
     /**
      * 获得Table对应的value值（表名）

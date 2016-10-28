@@ -5,9 +5,8 @@ import com.squareup.javapoet.TypeName;
 import com.wangjie.rapidorm.api.annotations.Column;
 import com.wangjie.rapidorm.api.constant.Constants;
 
-import java.sql.Blob;
-
 import javax.lang.model.element.Element;
+import java.sql.Blob;
 
 /**
  * Author: wangjie
@@ -21,11 +20,13 @@ public class ColumnEntry {
     private String columnName;
     private String dbType;
     private String dataType;
+    private Column column;
 
     public ColumnEntry(Element fieldColumnElement) {
         this.fieldColumnElement = fieldColumnElement;
         fieldSimpleName = fieldColumnElement.getSimpleName().toString();
-        columnName = getColumnName(fieldSimpleName, fieldColumnElement.getAnnotation(Column.class));
+        column = fieldColumnElement.getAnnotation(Column.class);
+        columnName = getColumnName(fieldSimpleName, column);
         fieldColumnTypeName = ClassName.get(fieldColumnElement.asType());
         dbType = parseDbType(fieldColumnTypeName);
         dataType = parseDataType(fieldColumnTypeName);
@@ -72,6 +73,10 @@ public class ColumnEntry {
 
     public void setDataType(String dataType) {
         this.dataType = dataType;
+    }
+
+    public Column getColumnAnnotation() {
+        return column;
     }
 
     /**

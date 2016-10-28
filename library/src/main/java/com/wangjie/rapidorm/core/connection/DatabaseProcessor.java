@@ -1,13 +1,11 @@
 package com.wangjie.rapidorm.core.connection;
 
-//import android.database.sqlite.RapidORMSupportSQLiteDatabase;
-
-import android.os.Process;
-
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDatabaseOpenHelperDelegate;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
+
+import android.os.Process;
 
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +36,7 @@ public class DatabaseProcessor {
             throw new RapidORMRuntimeException("tableConfigMapper not initialized, had you invoke super() method in the sub class of RapidORMConnection ?");
         }
         try {
-            db.execSQL(tableConfig.getTableCreateStatement().buildStatement(ifNotExists).toString());
+            tableConfig.createTable(db, ifNotExists);
         } catch (Exception e) {
             e.printStackTrace();
         }

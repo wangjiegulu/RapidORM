@@ -10,6 +10,7 @@ import com.wangjie.rapidorm.core.generate.builder.DeleteBuilder;
 import com.wangjie.rapidorm.core.generate.builder.QueryBuilder;
 import com.wangjie.rapidorm.core.generate.builder.UpdateBuilder;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
+import com.wangjie.rapidorm.exception.RapidORMException;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.TypeUtil;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
@@ -40,20 +41,20 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
     private RapidORMSQLiteStatementDelegate insertStmt;
     private RapidORMSQLiteStatementDelegate updateStmt;
-        private RapidORMSQLiteStatementDelegate delegateStmt;
+    private RapidORMSQLiteStatementDelegate deleteStmt;
 
-        public BaseDaoImpl(Class<T> clazz) {
-            this.clazz = clazz;
-            this.tableConfig = DatabaseProcessor.getInstance().getTableConfig(clazz);
-            insertStatement = tableConfig.getInsertStatement().getStatement();
-            updateStatement = tableConfig.getUpdateStatement().getStatement();
+    public BaseDaoImpl(Class<T> clazz) {
+        this.clazz = clazz;
+        this.tableConfig = DatabaseProcessor.getInstance().getTableConfig(clazz);
+        insertStatement = tableConfig.getInsertStatement().getStatement();
+        updateStatement = tableConfig.getUpdateStatement().getStatement();
         deleteStatement = tableConfig.getDeleteStatement().getStatement();
 
         try {
             RapidORMSQLiteDatabaseDelegate db = getDatabase();
             insertStmt = db.compileStatement(insertStatement);
-            updateStmt = db.compileStatement(updateStatement);
-            delegateStmt = db.compileStatement(deleteStatement);
+            updateStmt = tableConfig.getPkColumnConfigs().isEmpty() ? null : db.compileStatement(updateStatement);
+            deleteStmt = db.compileStatement(deleteStatement);
         } catch (Exception e) {
             throw new RapidORMRuntimeException(e);
         }
@@ -110,6 +111,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     protected void updateInternal(T model) throws Exception {
+        if (null == updateStmt) {
+            throw new RapidORMException("Table " + tableConfig.getTableName() + " have no primary key column. Please use `UpdateBuilder` to update");
+        }
         updateStmt.clearBindings();
         tableConfig.bindUpdateArgs(model, updateStmt, 0);
 
@@ -146,13 +150,13 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             return;
         }
 
-        delegateStmt.clearBindings();
-        tableConfig.bindPkArgs(model, delegateStmt, 0);
+        deleteStmt.clearBindings();
+        tableConfig.bindPkArgs(model, deleteStmt, 0);
 
         if (RapidORMConfig.DEBUG)
             Log.i(TAG, "deleteInternal ==> sql: " + deleteStatement + " >> model: " + model);
 
-        delegateStmt.executeUpdateDelete();
+        deleteStmt.executeUpdateDelete();
 
     }
 

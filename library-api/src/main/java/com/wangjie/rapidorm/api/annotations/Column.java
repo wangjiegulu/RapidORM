@@ -54,6 +54,7 @@ public @interface Column {
 
     boolean uniqueCombo() default false;
 
+    @Deprecated
     boolean index() default false;
 
 }

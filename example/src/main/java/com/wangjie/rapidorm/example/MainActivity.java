@@ -4,6 +4,7 @@ import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.example.database.DatabaseFactory;
 import com.wangjie.rapidorm.example.database.dao.PersonDaoImpl;
 import com.wangjie.rapidorm.example.database.model.Person;
+import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -112,24 +113,30 @@ public class MainActivity extends BaseActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                deleteAll();
-                RapidORMConfig.DEBUG = false;
-                List<Person> persons = new ArrayList<>();
+                final List<Person> persons = new ArrayList<>();
                 for (int i = 0; i < 10000; i++) {
                     Person p = getPerson();
                     p.setId(1 + i);
                     p.setName("wangjie_" + i);
                     persons.add(p);
                 }
-                PersonDaoImpl personDao = new PersonDaoImpl();
                 try {
-                    long start = System.currentTimeMillis();
-                    personDao.insertInTx(persons);
-                    Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start) + "ms");
+                    personDao.executeInTx(new RapidOrmFunc1() {
+                        @Override
+                        public void call() throws Exception {
+                            deleteAll();
+                            RapidORMConfig.DEBUG = false;
+                            long start = System.currentTimeMillis();
+                            personDao.insertInTx(persons);
+                            Log.i(TAG, "insert performance time: " + (System.currentTimeMillis() - start) + "ms");
+                            RapidORMConfig.DEBUG = true;
+                        }
+                    });
+
+
                 } catch (Exception e) {
                     Log.e(TAG, "", e);
                 }
-                RapidORMConfig.DEBUG = true;
             }
         }).start();
     }

@@ -1,6 +1,7 @@
 package com.wangjie.rapidorm.example.database.model;
 
 import com.wangjie.rapidorm.api.annotations.Column;
+import com.wangjie.rapidorm.api.annotations.Index;
 import com.wangjie.rapidorm.api.annotations.Table;
 
 import java.io.Serializable;
@@ -10,7 +11,10 @@ import java.io.Serializable;
  * Email: tiantian.china.2@gmail.com
  * Date: 6/25/15.
  */
-@Table
+@Table(indices = {
+        @Index(value = "birth, student", unique = true),
+        @Index(value = "is_succeed", name = "INDEX_CUSTOM_NAME_IS_SUCCEED", unique = false)
+})
 public class Person implements Serializable {
 
     @Column(primaryKey = true)

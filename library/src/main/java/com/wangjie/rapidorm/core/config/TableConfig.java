@@ -1,16 +1,12 @@
 package com.wangjie.rapidorm.core.config;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteStatement;
 import android.support.annotation.NonNull;
-
 import com.wangjie.rapidorm.api.annotations.Column;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
+import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.delegate.sqlitestatement.RapidORMSQLiteStatementDelegate;
-import com.wangjie.rapidorm.core.generate.statement.DeleteStatement;
-import com.wangjie.rapidorm.core.generate.statement.InsertStatement;
-import com.wangjie.rapidorm.core.generate.statement.TableCreateStatement;
-import com.wangjie.rapidorm.core.generate.statement.UpdateStatement;
+import com.wangjie.rapidorm.core.generate.statement.*;
 import com.wangjie.rapidorm.core.generate.statement.util.SqlUtil;
 import com.wangjie.rapidorm.util.ReflectionUtils;
 
@@ -44,7 +40,6 @@ public abstract class TableConfig<T> {
     protected List<ColumnConfig> indexColumnConfigsCache;
     protected List<ColumnConfig> uniqueComboColumnConfigsCache;
 
-    protected TableCreateStatement<T> tableCreateStatement;
     private InsertStatement<T> insertStatement;
     private UpdateStatement<T> updateStatement;
     private DeleteStatement<T> deleteStatement;
@@ -57,7 +52,6 @@ public abstract class TableConfig<T> {
             bindFieldColumnWithReflection();
         }
 
-        tableCreateStatement = new TableCreateStatement<>(this);
     }
 
     /**
@@ -114,7 +108,6 @@ public abstract class TableConfig<T> {
         return columnConfig;
     }
 
-
     public List<ColumnConfig> getUniqueComboColumnConfigs() {
         List<ColumnConfig> uniqueComboColumnConfigs = new ArrayList<>();
         for (ColumnConfig columnConfig : allColumnConfigs) {
@@ -169,11 +162,6 @@ public abstract class TableConfig<T> {
         return noPkColumnConfigs;
     }
 
-
-    public TableCreateStatement<T> getTableCreateStatement() {
-        return tableCreateStatement;
-    }
-
     public InsertStatement<T> getInsertStatement() {
         if (null == insertStatement) {
             insertStatement = new InsertStatement<>(this);
@@ -212,5 +200,7 @@ public abstract class TableConfig<T> {
     public abstract int bindPkArgs(T model, RapidORMSQLiteStatementDelegate statement, int indexOffset);
 
     public abstract T parseFromCursor(Cursor cursor);
+
+    public abstract void createTable(RapidORMSQLiteDatabaseDelegate db, boolean ifNotExists) throws Exception;
 
 }

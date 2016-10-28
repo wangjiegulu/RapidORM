@@ -18,7 +18,8 @@ import java.lang.annotation.Target;
 public @interface Table {
     /**
      * Table name
-     * @return
      */
     String name() default Constants.AnnotationNotSetValue.TABLE_NAME;
+
+    Index[] indices() default {};
 }
