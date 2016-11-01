@@ -27,5 +27,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="library-api.library-api-2.1.0" level="project" />
+    <orderEntry type="library" exported="" name="library-api.library-api-2.1.0-javadoc" level="project" />
+    <orderEntry type="library" exported="" name="library-api.library-api-2.1.0-sources" level="project" />
   </component>
 </module>

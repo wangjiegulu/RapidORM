@@ -41,6 +41,7 @@ public @interface Column {
      *
      * @return
      */
+    @Deprecated
     String defaultValue() default Constants.AnnotationNotSetValue.DEFAULT_VALUE;
 
     /**
