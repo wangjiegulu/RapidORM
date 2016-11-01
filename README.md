@@ -311,6 +311,23 @@ public class Person_RORM extends TableConfig<Person> {
     }
     return model;
   }
+
+  @Override
+  public void createTable(RapidORMSQLiteDatabaseDelegate db, boolean ifNotExists) throws Exception {
+    String ifNotExistsConstraint = ifNotExists? "IF NOT EXISTS " : "";
+    db.execSQL("CREATE TABLE " + ifNotExistsConstraint + "`Person` ( \n"
+            + "`id` INTEGER,\n"
+            + "`type_id` INTEGER,\n"
+            + "`name` TEXT,\n"
+            + "`age` INTEGER,\n"
+            + "`address` TEXT,\n"
+            + "`birth` LONG,\n"
+            + "`student` INTEGER,\n"
+            + "`is_succeed` INTEGER,\n"
+            + " PRIMARY KEY (id, type_id));");
+    db.execSQL("CREATE UNIQUE INDEX " + ifNotExistsConstraint + "INDEX_BIRTH_STUDENT ON `Person`(\"birth, student\");");
+    db.execSQL("CREATE INDEX " + ifNotExistsConstraint + "INDEX_CUSTOM_NAME_IS_SUCCEED ON `Person`(\"is_succeed\");");
+  }
 }
 ```
 
@@ -410,5 +427,3 @@ License
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing blacklist and
     limitations under the License.
-
-
