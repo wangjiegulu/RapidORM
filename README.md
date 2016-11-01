@@ -77,7 +77,7 @@ public class Person implements Serializable {
 ```
 
 
-### 2. Generate persistent helper class in compile time
+### 3. Generate persistent helper class in compile time
 
 ```java
 public class Person_RORM extends TableConfig<Person> {
@@ -314,7 +314,7 @@ public class Person_RORM extends TableConfig<Person> {
 }
 ```
 
-### 3. Register persistent class
+### 4. Register persistent class
 
 Extends `RapidORMConnection` and override `registerTableConfigMapper(HashMap<Class, TableConfig> tableConfigMapper)` method:
 
@@ -326,11 +326,11 @@ protected void registerTableConfigMapper(HashMap<Class, TableConfig> tableConfig
 }
 ```
 
-### 4. Execute SQL use Builder
+### 5. Execute SQL use Builder
 
 > `QueryBuilder`, `UpdateBuilder`, `DeleteBuilder`
 
-#### 4.1 QueryBuilder
+#### 5.1 QueryBuilder
 ```java
 public List<Person> findPersonsByWhere() throws Exception {
     return queryBuilder()
@@ -354,7 +354,7 @@ public List<Person> findPersonsByWhere() throws Exception {
 }
 ```
 
-#### 4.2 UpdateBuilder
+#### 5.2 UpdateBuilder
 ```java
 public void updatePerson() throws Exception {
     updateBuilder()
@@ -375,7 +375,7 @@ public void updatePerson() throws Exception {
 }
 ```
 
-#### 4.3 DeleteBuilder
+#### 5.3 DeleteBuilder
 ```java
 public void deletePerson() throws Exception {
     deleteBuilder()
@@ -410,4 +410,5 @@ License
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing blacklist and
     limitations under the License.
+
 
