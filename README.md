@@ -15,7 +15,69 @@ Android lightweight, high performance ORM framework.
 
 ## How to use
 
-### 1. Creating persistent class:
+### 1. Compile it in `build.gradle`
+
+###Gadle([Check newest version](http://search.maven.org/#search%7Cga%7C1%7CRapidORM))
+
+```groovy
+compile "com.github.wangjiegulu:rapidorm:x.x.x"
+
+compile "com.github.wangjiegulu:rapidorm-api:x.x.x"
+
+apt "com.github.wangjiegulu:rapidorm-compiler:x.x.x"
+```
+
+###Maven([Check newest version](http://search.maven.org/#search%7Cga%7C1%7CRapidORM))
+
+```xml
+<dependency>
+        <groupId>com.github.wangjiegulu</groupId>
+        <artifactId>rapidorm</artifactId>
+        <version>x.x.x</version>
+</dependency>
+```
+
+### 2. Create persistent class mapping to table
+
+```java
+/**
+ * Author: wangjie
+ * Email: tiantian.china.2@gmail.com
+ * Date: 6/25/15.
+ */
+@Table(indices = {
+        @Index(value = "birth, student", unique = true),
+        @Index(value = "is_succeed", name = "INDEX_CUSTOM_NAME_IS_SUCCEED", unique = false)
+})
+public class Person implements Serializable {
+
+    @Column(primaryKey = true)
+    Integer id;
+
+    @Column(primaryKey = true, name = "type_id")
+    Integer typeId;
+
+    @Column
+    String name;
+
+    @Column
+    int age;
+
+    @Column
+    String address;
+
+    @Column
+    Long birth;
+
+    @Column
+    Boolean student;
+
+    @Column(name = "is_succeed")
+    boolean isSucceed;
+```
+
+
+### 2. Generate persistent helper class in compile time
 
 ```java
 public class Person_RORM extends TableConfig<Person> {
@@ -348,3 +410,4 @@ License
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing blacklist and
     limitations under the License.
+
