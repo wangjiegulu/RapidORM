@@ -1,11 +1,11 @@
 package com.wangjie.rapidorm.core.connection;
 
+import android.os.Process;
+import android.support.annotation.NonNull;
 import com.wangjie.rapidorm.core.config.TableConfig;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.delegate.openhelper.RapidORMDatabaseOpenHelperDelegate;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
-
-import android.os.Process;
 
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +42,13 @@ public class DatabaseProcessor {
         }
     }
 
+    public void createAllTable(RapidORMSQLiteDatabaseDelegate db, boolean ifNotExists) {
+        checkInitialized();
+        for (Class tableClass : tableConfigMapper.keySet()) {
+            createTable(db, tableClass, ifNotExists);
+        }
+    }
+
     public <T> void dropTable(RapidORMSQLiteDatabaseDelegate db, Class<T> clazz) {
         checkInitialized();
         TableConfig<T> tableConfig = tableConfigMapper.get(clazz);
@@ -75,7 +82,7 @@ public class DatabaseProcessor {
      * RapidORMConnection构造的时候就初始化好所有的tableClass
      */
     @SuppressWarnings("unchecked")
-    public void initializeConnection(RapidORMConnection rapidORMConnection, Map<Class, TableConfig> tableConfigMapper) {
+    public void initializeConnection(RapidORMConnection rapidORMConnection, @NonNull Map<Class, TableConfig> tableConfigMapper) {
         if (isInitialized) {
             return;
         }

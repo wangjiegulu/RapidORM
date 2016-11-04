@@ -419,8 +419,8 @@ public class TableEntry {
                         "ifNotExistsConstraint",
                         (Constants.AnnotationNotSetValue.INDEX_NAME.equals(indexName) ?
 //                                "INDEX_" + value.replaceAll("[ ,]", "_").replaceAll("__+", "_").toUpperCase() : indexName) +
-                                "INDEX_" + value.replaceAll("( |,){2,}|( |,)", "_").toUpperCase() : indexName) +
-                        " ON `" + getTableName() + "`(\"" + value + "\");"
+                                "INDEX_" + value.replaceAll("`|\"", "").replaceAll("( |,){2,}|( |,)", "_").toUpperCase() : indexName) +
+                        " ON `" + getTableName() + "`(" + value + ");"
                 );
             }
         }

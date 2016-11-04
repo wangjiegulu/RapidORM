@@ -9,7 +9,6 @@ import android.os.Build;
 import com.wangjie.rapidorm.core.connection.DatabaseProcessor;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMDefaultSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
-import com.wangjie.rapidorm.example.database.model.Person;
 
 /**
  * Author: wangjie
@@ -29,14 +28,16 @@ public class MyDatabaseOpenHelper extends SQLiteOpenHelper {
     public MyDatabaseOpenHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, DatabaseErrorHandler errorHandler) {
         super(context, name, factory, version, errorHandler);
     }
+
     private RapidORMSQLiteDatabaseDelegate rapidORMSQLiteDatabaseDelegate;
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         rapidORMSQLiteDatabaseDelegate = new RapidORMDefaultSQLiteDatabaseDelegate(db);
         DatabaseProcessor databaseProcessor = DatabaseProcessor.getInstance();
         databaseProcessor.initializeDatabase(rapidORMSQLiteDatabaseDelegate);
 
-        DatabaseProcessor.getInstance().createTable(rapidORMSQLiteDatabaseDelegate, Person.class, true);
+        DatabaseProcessor.getInstance().createAllTable(rapidORMSQLiteDatabaseDelegate, true);
     }
 
     @Override

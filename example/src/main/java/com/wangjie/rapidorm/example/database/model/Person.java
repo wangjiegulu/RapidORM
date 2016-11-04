@@ -12,8 +12,8 @@ import java.io.Serializable;
  * Date: 6/25/15.
  */
 @Table(indices = {
-        @Index(value = "birth, student", unique = true),
-        @Index(value = "is_succeed", name = "INDEX_CUSTOM_NAME_IS_SUCCEED", unique = false)
+//        @Index(value = "`birth`, `student`", unique = true),
+        @Index(value = "`is_succeed`", name = "INDEX_CUSTOM_NAME_IS_SUCCEED", unique = false)
 })
 public class Person implements Serializable {
 
