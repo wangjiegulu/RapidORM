@@ -1,5 +1,8 @@
 package com.wangjie.rapidorm.core.dao;
 
+import android.database.Cursor;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.TableConfig;
@@ -14,10 +17,6 @@ import com.wangjie.rapidorm.exception.RapidORMException;
 import com.wangjie.rapidorm.exception.RapidORMRuntimeException;
 import com.wangjie.rapidorm.util.TypeUtil;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
-
-import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -115,7 +114,8 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             throw new RapidORMException("Table " + tableConfig.getTableName() + " have no primary key column. Please use `UpdateBuilder` to update");
         }
         updateStmt.clearBindings();
-        tableConfig.bindUpdateArgs(model, updateStmt, 0);
+        int indexOff = tableConfig.bindUpdateArgs(model, updateStmt, 0);
+        tableConfig.bindPkArgs(model, updateStmt, indexOff);
 
         if (RapidORMConfig.DEBUG)
             Log.i(TAG, "updateInternal ==> sql: " + updateStatement + " >> model: " + model);
