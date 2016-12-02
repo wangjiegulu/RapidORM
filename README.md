@@ -15,7 +15,69 @@ Android lightweight, high performance ORM framework.
 
 ## How to use
 
-### 1. Creating persistent class:
+### 1. Compile it in `build.gradle`
+
+###Gadle([Check newest version](http://search.maven.org/#search%7Cga%7C1%7CRapidORM))
+
+```groovy
+compile "com.github.wangjiegulu:rapidorm:x.x.x"
+
+compile "com.github.wangjiegulu:rapidorm-api:x.x.x"
+
+apt "com.github.wangjiegulu:rapidorm-compiler:x.x.x"
+```
+
+###Maven([Check newest version](http://search.maven.org/#search%7Cga%7C1%7CRapidORM))
+
+```xml
+<dependency>
+        <groupId>com.github.wangjiegulu</groupId>
+        <artifactId>rapidorm</artifactId>
+        <version>x.x.x</version>
+</dependency>
+```
+
+### 2. Create persistent class mapping to table
+
+```java
+/**
+ * Author: wangjie
+ * Email: tiantian.china.2@gmail.com
+ * Date: 6/25/15.
+ */
+@Table(indices = {
+        @Index(value = "birth, student", unique = true),
+        @Index(value = "is_succeed", name = "INDEX_CUSTOM_NAME_IS_SUCCEED", unique = false)
+})
+public class Person implements Serializable {
+
+    @Column(primaryKey = true)
+    Integer id;
+
+    @Column(primaryKey = true, name = "type_id")
+    Integer typeId;
+
+    @Column
+    String name;
+
+    @Column
+    int age;
+
+    @Column
+    String address;
+
+    @Column
+    Long birth;
+
+    @Column
+    Boolean student;
+
+    @Column(name = "is_succeed")
+    boolean isSucceed;
+```
+
+
+### 3. Generate persistent helper class in compile time
 
 ```java
 public class Person_RORM extends TableConfig<Person> {
@@ -249,10 +311,27 @@ public class Person_RORM extends TableConfig<Person> {
     }
     return model;
   }
+
+  @Override
+  public void createTable(RapidORMSQLiteDatabaseDelegate db, boolean ifNotExists) throws Exception {
+    String ifNotExistsConstraint = ifNotExists? "IF NOT EXISTS " : "";
+    db.execSQL("CREATE TABLE " + ifNotExistsConstraint + "`Person` ( \n"
+            + "`id` INTEGER,\n"
+            + "`type_id` INTEGER,\n"
+            + "`name` TEXT,\n"
+            + "`age` INTEGER,\n"
+            + "`address` TEXT,\n"
+            + "`birth` LONG,\n"
+            + "`student` INTEGER,\n"
+            + "`is_succeed` INTEGER,\n"
+            + " PRIMARY KEY (id, type_id));");
+    db.execSQL("CREATE UNIQUE INDEX " + ifNotExistsConstraint + "INDEX_BIRTH_STUDENT ON `Person`(\"birth, student\");");
+    db.execSQL("CREATE INDEX " + ifNotExistsConstraint + "INDEX_CUSTOM_NAME_IS_SUCCEED ON `Person`(\"is_succeed\");");
+  }
 }
 ```
 
-### 3. Register persistent class
+### 4. Register persistent class
 
 Extends `RapidORMConnection` and override `registerTableConfigMapper(HashMap<Class, TableConfig> tableConfigMapper)` method:
 
@@ -264,11 +343,11 @@ protected void registerTableConfigMapper(HashMap<Class, TableConfig> tableConfig
 }
 ```
 
-### 4. Execute SQL use Builder
+### 5. Execute SQL use Builder
 
 > `QueryBuilder`, `UpdateBuilder`, `DeleteBuilder`
 
-#### 4.1 QueryBuilder
+#### 5.1 QueryBuilder
 ```java
 public List<Person> findPersonsByWhere() throws Exception {
     return queryBuilder()
@@ -292,7 +371,7 @@ public List<Person> findPersonsByWhere() throws Exception {
 }
 ```
 
-#### 4.2 UpdateBuilder
+#### 5.2 UpdateBuilder
 ```java
 public void updatePerson() throws Exception {
     updateBuilder()
@@ -313,7 +392,7 @@ public void updatePerson() throws Exception {
 }
 ```
 
-#### 4.3 DeleteBuilder
+#### 5.3 DeleteBuilder
 ```java
 public void deletePerson() throws Exception {
     deleteBuilder()
