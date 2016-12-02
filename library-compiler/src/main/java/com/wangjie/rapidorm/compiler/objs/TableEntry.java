@@ -1,16 +1,20 @@
 package com.wangjie.rapidorm.compiler.objs;
 
+import com.google.auto.common.MoreTypes;
+import com.google.common.base.Optional;
 import com.squareup.javapoet.*;
 import com.wangjie.rapidorm.api.annotations.Column;
 import com.wangjie.rapidorm.api.annotations.Index;
 import com.wangjie.rapidorm.api.annotations.Table;
 import com.wangjie.rapidorm.api.constant.Constants;
 import com.wangjie.rapidorm.compiler.constants.GuessClass;
+import com.wangjie.rapidorm.compiler.util.GlobalEnvironment;
 import com.wangjie.rapidorm.compiler.util.LogUtil;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.DeclaredType;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,15 +50,41 @@ public class TableEntry {
     }
 
     private void parse() throws Throwable {
-        List<? extends Element> eles = mSourceClassEle.getEnclosedElements();
+
+        List<Element> allElements = new ArrayList<>();
+        allElements.add(mSourceClassEle);
+        Element currentClass = mSourceClassEle;
+        do {
+            Optional<DeclaredType> superClass = MoreTypes.nonObjectSuperclass(GlobalEnvironment.getProcessingEnv().getTypeUtils(),
+                    GlobalEnvironment.getProcessingEnv().getElementUtils(), (DeclaredType) currentClass.asType());
+            if (superClass.isPresent()) {
+                currentClass = superClass.get().asElement();
+                allElements.add(currentClass);
+                LogUtil.logger("superclass.get().asElement().toString(): " + currentClass.toString());
+            } else {
+                currentClass = null;
+            }
+        } while (null != currentClass);
+
+        for (int i = allElements.size() - 1; i >= 0; i--) {
+            buildAllColumns(allElements.get(i));
+        }
+
+    }
+
+    private void buildAllColumns(Element element) {
+        if (null == element) {
+            return;
+        }
+        List<? extends Element> eles = element.getEnclosedElements();
         for (Element e : eles) {
             if (ElementKind.FIELD == e.getKind()) {
                 if (e.getModifiers().contains(Modifier.PRIVATE)) {
-                    throw new RuntimeException(e.getSimpleName().toString() + " in " + mSourceClassEle.asType().toString() + " can not be private!");
+                    throw new RuntimeException(e.getSimpleName().toString() + " in " + element.asType().toString() + " CAN NOT be private!");
                 }
                 Column column = e.getAnnotation(Column.class);
                 if (null != column) {
-                    mColumnList.add(new ColumnEntry(e));
+                    mColumnList.add(new ColumnEntry(e, element));
                 }
             }
         }
@@ -214,7 +244,7 @@ public class TableEntry {
                     FieldSpec.builder(stringClassName, columnName.toUpperCase(), Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC)
                             .addJavadoc("Column name: $S, field name: {@link $T#$L}\n",
                                     columnName,
-                                    mSourceClassEleTypeName,
+                                    ClassName.get(columnEntry.getClassElement().asType()),
                                     columnEntry.getFieldSimpleName()
                             )
                             .initializer("$S", columnName)
@@ -420,12 +450,10 @@ public class TableEntry {
                         (Constants.AnnotationNotSetValue.INDEX_NAME.equals(indexName) ?
 //                                "INDEX_" + value.replaceAll("[ ,]", "_").replaceAll("__+", "_").toUpperCase() : indexName) +
                                 "INDEX_" + value.replaceAll("`|\"", "").replaceAll("( |,){2,}|( |,)", "_").toUpperCase() : indexName) +
-                        " ON `" + getTableName() + "`(" + value + ");"
+                                " ON `" + getTableName() + "`(" + value + ");"
                 );
             }
         }
-
-
 
 
         result.addMethod(createTableMethod.build());

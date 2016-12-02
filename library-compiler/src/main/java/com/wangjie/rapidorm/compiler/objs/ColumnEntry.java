@@ -22,7 +22,9 @@ public class ColumnEntry {
     private String dataType;
     private Column column;
 
-    public ColumnEntry(Element fieldColumnElement) {
+    private Element classElement;
+
+    public ColumnEntry(Element fieldColumnElement, Element classElement) {
         this.fieldColumnElement = fieldColumnElement;
         fieldSimpleName = fieldColumnElement.getSimpleName().toString();
         column = fieldColumnElement.getAnnotation(Column.class);
@@ -30,6 +32,7 @@ public class ColumnEntry {
         fieldColumnTypeName = ClassName.get(fieldColumnElement.asType());
         dbType = parseDbType(fieldColumnTypeName);
         dataType = parseDataType(fieldColumnTypeName);
+        this.classElement = classElement;
     }
 
     public String getFieldSimpleName() {
@@ -77,6 +80,10 @@ public class ColumnEntry {
 
     public Column getColumnAnnotation() {
         return column;
+    }
+
+    public Element getClassElement() {
+        return classElement;
     }
 
     /**

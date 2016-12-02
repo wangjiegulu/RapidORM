@@ -1,12 +1,11 @@
 package com.wangjie.rapidorm.compiler.util;
 
+import javax.tools.Diagnostic;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import javax.tools.Diagnostic;
 
 /**
  * Author: wangjie
@@ -42,7 +41,7 @@ public class LogUtil {
 
     private static void writeToDisk(String log) {
         try {
-            File logFile = new File("/Users/wangjie/Desktop/za/test/alibaba/processor_http.txt");
+            File logFile = new File("/Users/wangjie/Desktop/za/test/rapidorm/processor_http.txt");
             if (!logFile.exists()) {
                 logFile.getParentFile().mkdirs();
                 logFile.createNewFile();

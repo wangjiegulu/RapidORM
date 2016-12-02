@@ -1,17 +1,16 @@
 package com.wangjie.rapidorm.example;
 
-import com.wangjie.rapidorm.constants.RapidORMConfig;
-import com.wangjie.rapidorm.example.database.DatabaseFactory;
-import com.wangjie.rapidorm.example.database.dao.PersonDaoImpl;
-import com.wangjie.rapidorm.example.database.model.Person;
-import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import com.wangjie.rapidorm.constants.RapidORMConfig;
+import com.wangjie.rapidorm.example.database.DatabaseFactory;
+import com.wangjie.rapidorm.example.database.dao.PersonDaoImpl;
+import com.wangjie.rapidorm.example.database.model.Person;
+import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -150,11 +149,10 @@ public class MainActivity extends BaseActivity {
     }
 
     private void update() {
-        Person p = new Person();
-        p.setId(100);
-        p.setTypeId(1);
+        Person p = getPerson();
         p.setName("wangjie_modified");
         p.setStudent(false);
+        p.setEarth("earth_y");
         try {
             personDao.update(p);
         } catch (Exception e) {
@@ -182,6 +180,8 @@ public class MainActivity extends BaseActivity {
         person.setBirth(System.currentTimeMillis());
         person.setAddress("address");
         person.setStudent(true);
+        person.setSpecies("species_x");
+        person.setEarth("earth_x");
         return person;
     }
 

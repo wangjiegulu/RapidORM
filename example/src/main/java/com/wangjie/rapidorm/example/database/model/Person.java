@@ -15,7 +15,7 @@ import java.io.Serializable;
 //        @Index(value = "`birth`, `student`", unique = true),
         @Index(value = "`is_succeed`", name = "INDEX_CUSTOM_NAME_IS_SUCCEED", unique = false)
 })
-public class Person implements Serializable {
+public class Person extends People implements Serializable {
 
     @Column(primaryKey = true)
     Integer id;
@@ -116,6 +116,6 @@ public class Person implements Serializable {
                 ", birth=" + birth +
                 ", student=" + student +
                 ", isSucceed=" + isSucceed +
-                '}';
+                '}' + super.toString();
     }
 }
