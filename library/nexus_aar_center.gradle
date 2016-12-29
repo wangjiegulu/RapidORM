@@ -1,0 +1,74 @@
+// ********************************** upload archives ***********************************
+
+apply plugin: 'maven'
+apply plugin: 'signing' //使用signing plugin做数字签名
+
+//定义GroupID和Version，ArtefactID会自动使用Project名
+group = "$archiveGroup"
+version = "$archiveVersion"
+//sourceCompatibility = 1.7
+//targetCompatibility = 1.7
+
+repositories {
+    mavenCentral();
+}
+
+artifacts {
+//    archives file("$archivePath")
+    archives file: file("$archivePath"), /*name: 'A', */ type: 'aar', classifier: 'android'
+}
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            //为Pom文件做数字签名
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            //指定项目部署到的中央库地址，UserName和Password就是Part 1中注册的账号。
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: "$ossrhUsername", password: "$ossrhPassword")
+            }
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: "$ossrhUsername", password: "$ossrhPassword")
+            }
+
+//            addFilter("$archiveName") {artifact, file ->
+//                artifact.name.endsWith("$archiveName")
+//            }
+
+            //构造项目的Pom文件，参见Part 2中Pom文件的规范，不要遗漏必填项
+            pom.project {
+                name "$archiveName"
+                artifactId "$archiveName"
+                packaging 'aar'
+                description "$archiveDesc"
+                url "$archiveUrl"
+
+                scm {
+                    url 'scm:git@github.com:wangjiegulu/RapidORM.git'
+                    connection 'scm:git@github.com:wangjiegulu/RapidORM.git'
+                    developerConnection 'git@github.com:wangjiegulu/RapidORM.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'wangjie'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'wangjie'
+                        name 'Wang Jie'
+                        email 'tiantian.china.2@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+}

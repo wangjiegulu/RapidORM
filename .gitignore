@@ -7,7 +7,7 @@
 settings.gradle
 gradle.properties
 /*/*.iml
-
+nexus_aar_db.gradle
 
 # Built application files
 *.apk

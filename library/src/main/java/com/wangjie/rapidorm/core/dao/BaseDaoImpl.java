@@ -71,9 +71,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-//                    synchronized (tableConfig) {
-                    insertInternal(model);
-//                    }
+                    synchronized (tableConfig) {
+                        insertInternal(model);
+                    }
                 }
             });
         }
@@ -101,9 +101,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-//                    synchronized (tableConfig) {
-                    updateInternal(model);
-//                    }
+                    synchronized (tableConfig) {
+                        updateInternal(model);
+                    }
                 }
             });
         }
@@ -135,9 +135,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-//                    synchronized (tableConfig) {
-                    deleteInternal(model);
-//                    }
+                    synchronized (tableConfig) {
+                        deleteInternal(model);
+                    }
                 }
             });
         }
@@ -188,9 +188,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-//                    synchronized (tableConfig) {
-                    deleteAllInternal(db);
-//                    }
+                    synchronized (tableConfig) {
+                        deleteAllInternal(db);
+                    }
                 }
             });
         }
@@ -250,9 +250,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             executeInTx(db, new RapidOrmFunc1() {
                 @Override
                 public void call() throws Exception {
-//                    synchronized (tableConfig) {
-                    rawExecute(db, sql, bindArgs);
-//                    }
+                    synchronized (tableConfig) {
+                        rawExecute(db, sql, bindArgs);
+                    }
                 }
             });
         }
@@ -341,9 +341,9 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
         db.beginTransaction();
         try {
-            synchronized (tableConfig) {
-                func1.call();
-            }
+//            synchronized (tableConfig) {
+            func1.call();
+//            }
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -353,6 +353,24 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     @Override
     public void executeInTx(RapidOrmFunc1 func1) throws Exception {
         executeInTx(null, func1);
+    }
+
+    @Override
+    public void executeInTxSync(RapidOrmFunc1 func1) throws Exception {
+        RapidORMSQLiteDatabaseDelegate db = getDatabase();
+        if (null == func1) {
+            return;
+        }
+
+        db.beginTransaction();
+        try {
+            synchronized (tableConfig) {
+                func1.call();
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public RapidORMSQLiteDatabaseDelegate getDatabase() {

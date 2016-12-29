@@ -32,6 +32,8 @@
     <orderEntry type="library" exported="" name="auto-common-0.6" level="project" />
     <orderEntry type="library" exported="" name="javapoet-1.0.0" level="project" />
     <orderEntry type="library" exported="" name="guava-18.0" level="project" />
-    <orderEntry type="library" exported="" name="library-compiler.library-compiler-2.1.1-rc01" level="project" />
+    <orderEntry type="library" exported="" name="library-compiler.library-compiler-2.1.1-rc02" level="project" />
+    <orderEntry type="library" exported="" name="library-compiler.library-compiler-2.1.1-rc02-javadoc" level="project" />
+    <orderEntry type="library" exported="" name="library-compiler.library-compiler-2.1.1-rc02-sources" level="project" />
   </component>
 </module>

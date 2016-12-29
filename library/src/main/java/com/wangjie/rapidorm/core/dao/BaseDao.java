@@ -47,4 +47,6 @@ public interface BaseDao<T> {
 
     void executeInTx(RapidOrmFunc1 func1) throws Exception;
 
+    void executeInTxSync(RapidOrmFunc1 func1) throws Exception;
+
 }
