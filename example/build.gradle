@@ -1,22 +1,12 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
-    }
-}
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion global_compileSdkVersion
 
     defaultConfig {
         applicationId "com.wangjie.rapidorm.example"
-        minSdkVersion 9
-        targetSdkVersion 23
+        minSdkVersion global_minSdkVersion
+        targetSdkVersion global_targetSdkVersion
         versionCode 1
         versionName "1.0"
     }
@@ -29,15 +19,15 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.2.1'
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    api "com.android.support:appcompat-v7:$global_supportVersion"
 
 //    compile 'com.github.wangjiegulu:AndroidBucket:1.0.4'
 //    compile 'com.github.wangjiegulu:AndroidInject:1.0.6'
 
-    compile project(':library')
-    compile project(':library-api')
-    apt project(':library-compiler')
+    api project(':library')
+    api project(':library-api')
+    annotationProcessor project(':library-compiler')
 
 
 }

@@ -5,8 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+        classpath 'com.android.tools.build:gradle:3.0.0'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -14,6 +13,26 @@ buildscript {
 
 allprojects {
     repositories {
+        google()
         jcenter()
     }
+
+    ext {
+        global_compileSdkVersion = 26
+        global_minSdkVersion = 14
+        global_targetSdkVersion = 26
+
+        global_supportVersion = '26.1.0'
+        global_constraintLayoutVersion = "1.0.2"
+
+        global_okhttpVersion = '3.4.1'
+        global_gsonVersion = '2.8.0'
+        global_rxjavaVersion = '2.1.2'
+        global_rxandroidVersion = '2.0.1'
+
+        global_junitVersion = '4.12'
+        global_runnerVersion = '1.0.1'
+        global_espressoVersion = '3.0.1'
+    }
+
 }
