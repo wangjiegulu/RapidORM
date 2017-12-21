@@ -4,9 +4,7 @@
 /.idea/libraries
 .DS_Store
 /build
-settings.gradle
 gradle.properties
-/*/*.iml
 nexus_aar_db.gradle
 
 # Built application files
