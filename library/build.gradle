@@ -43,14 +43,14 @@ android {
 }
 
 dependencies {
-    api fileTree(dir: 'libs', include: ['*.jar'])
-    api "com.android.support:appcompat-v7:$global_supportVersion"
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "com.android.support:appcompat-v7:$global_supportVersion"
 
-    api project(':library-api')
+    implementation project(':library-api')
 
 }
 
 
-apply from: 'nexus_aar_center.gradle'
+//apply from: 'nexus_aar_center.gradle'
 
-//apply from: 'nexus_aar.gradle'
+apply from: '../mavenupload/maven_push.gradle'

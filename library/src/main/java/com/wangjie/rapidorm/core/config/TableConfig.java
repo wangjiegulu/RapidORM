@@ -43,6 +43,8 @@ public abstract class TableConfig<T> {
     private InsertStatement<T> insertStatement;
     private UpdateStatement<T> updateStatement;
     private DeleteStatement<T> deleteStatement;
+    private IsExistStatement<T> isExistStatement;
+
 
     public TableConfig(@NonNull Class<T> tableClazz) {
         this.tableClazz = tableClazz;
@@ -181,6 +183,13 @@ public abstract class TableConfig<T> {
             deleteStatement = new DeleteStatement<>(this);
         }
         return deleteStatement;
+    }
+
+    public IsExistStatement<T> getIsExistStatement() {
+        if (null == isExistStatement) {
+            isExistStatement = new IsExistStatement<>(this);
+        }
+        return isExistStatement;
     }
 
     private List<ColumnConfig> insertColumnConfigs;

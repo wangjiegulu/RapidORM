@@ -3,6 +3,7 @@ package com.wangjie.rapidorm.core.dao;
 import com.wangjie.rapidorm.core.delegate.database.RapidORMSQLiteDatabaseDelegate;
 import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -19,8 +20,6 @@ public interface BaseDao<T> {
     void delete(T model) throws Exception;
 
     void deleteAll() throws Exception;
-
-    void insertOrReplace(T model) throws Exception;
 
     List<T> queryAll() throws Exception;
 
@@ -48,5 +47,20 @@ public interface BaseDao<T> {
     void executeInTx(RapidOrmFunc1 func1) throws Exception;
 
     void executeInTxSync(RapidOrmFunc1 func1) throws Exception;
+
+    /**
+     * v2.2.x insertOrUpdate
+     */
+    boolean isExist(T model) throws Exception;
+
+    void insertOrUpdate(T model) throws Exception;
+
+    void insertOrUpdate(T... models) throws Exception;
+
+    void insertOrUpdate(Collection<T> models) throws Exception;
+
+    void insertOrUpdateInTx(T... models) throws Exception;
+
+    void insertOrUpdateInTx(Collection<T> models) throws Exception;
 
 }

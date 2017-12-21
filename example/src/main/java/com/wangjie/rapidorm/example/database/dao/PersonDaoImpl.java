@@ -17,6 +17,7 @@ public class PersonDaoImpl extends XBaseDaoImpl<Person> {
     }
 
     public List<Person> findPersonsByWhere() throws Exception {
+        insertOrUpdate();
         return queryBuilder()
                 .addSelectColumn(Person_RORM.ID, Person_RORM.TYPE_ID, Person_RORM.NAME,
                         Person_RORM.AGE, Person_RORM.BIRTH, Person_RORM.ADDRESS)

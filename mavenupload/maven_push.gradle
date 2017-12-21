@@ -1,0 +1,15 @@
+ext.mvnType = "central"
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+    options.addStringOption('charSet', 'UTF-8')
+}
+
+if (project.getPlugins().hasPlugin('com.android.application') ||
+        project.getPlugins().hasPlugin('com.android.library')) {
+    apply from: "$project.rootDir/mavenupload/$mvnType/maven_push_aar.gradle"
+} else if (project.getPlugins().hasPlugin('java')) {
+    apply from: "$project.rootDir/mavenupload/$mvnType/maven_push_jar.gradle"
+}
+

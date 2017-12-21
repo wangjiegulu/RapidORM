@@ -2,7 +2,9 @@ package com.wangjie.rapidorm.core.dao;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
+
 import com.wangjie.rapidorm.constants.RapidORMConfig;
 import com.wangjie.rapidorm.core.config.ColumnConfig;
 import com.wangjie.rapidorm.core.config.TableConfig;
@@ -21,6 +23,7 @@ import com.wangjie.rapidorm.util.func.RapidOrmFunc1;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -37,10 +40,15 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     protected final String insertStatement;
     protected final String updateStatement;
     protected final String deleteStatement;
+    protected final String isExistStatement;
 
     private RapidORMSQLiteStatementDelegate insertStmt;
     private RapidORMSQLiteStatementDelegate updateStmt;
     private RapidORMSQLiteStatementDelegate deleteStmt;
+    @Nullable
+    private RapidORMSQLiteStatementDelegate isExistStmt;
+
+    private boolean pkColumnIsEmpty;
 
     public BaseDaoImpl(Class<T> clazz) {
         this.clazz = clazz;
@@ -48,12 +56,28 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
         insertStatement = tableConfig.getInsertStatement().getStatement();
         updateStatement = tableConfig.getUpdateStatement().getStatement();
         deleteStatement = tableConfig.getDeleteStatement().getStatement();
+        isExistStatement = tableConfig.getIsExistStatement().getStatement();
 
+        pkColumnIsEmpty = tableConfig.getPkColumnConfigs().isEmpty();
+
+        RapidORMSQLiteDatabaseDelegate db = getDatabase();
         try {
-            RapidORMSQLiteDatabaseDelegate db = getDatabase();
             insertStmt = db.compileStatement(insertStatement);
-            updateStmt = tableConfig.getPkColumnConfigs().isEmpty() ? null : db.compileStatement(updateStatement);
+        } catch (Exception e) {
+            throw new RapidORMRuntimeException(e);
+        }
+        try {
+            updateStmt = pkColumnIsEmpty ? null : db.compileStatement(updateStatement);
+        } catch (Exception e) {
+            throw new RapidORMRuntimeException(e);
+        }
+        try {
             deleteStmt = db.compileStatement(deleteStatement);
+        } catch (Exception e) {
+            throw new RapidORMRuntimeException(e);
+        }
+        try {
+            isExistStmt = pkColumnIsEmpty ? null : db.compileStatement(isExistStatement);
         } catch (Exception e) {
             throw new RapidORMRuntimeException(e);
         }
@@ -204,11 +228,6 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @Override
-    public void insertOrReplace(@NonNull T model) throws Exception {
-        throw new RapidORMRuntimeException("InsertOrReplace Not Support Yet!");
-    }
-
-    @Override
     public List<T> queryAll() throws Exception {
         String sql = SqlUtil.generateSqlQueryAll(tableConfig);
         if (RapidORMConfig.DEBUG)
@@ -268,6 +287,91 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
             db.execSQL(sql, bindArgs);
         }
     }
+
+    /*
+     * ********************* v2.2.0 insertOrUpdate START *************************
+     */
+    @Override
+    public boolean isExist(final T model) throws Exception {
+        if (null == isExistStmt || pkColumnIsEmpty) {
+            throw new RuntimeException(tableConfig.getTableName() + " have no primary key, can not call this method. should override this method in dao class.");
+        }
+        final boolean[] result = new boolean[1];
+        final RapidORMSQLiteDatabaseDelegate db = getDatabase();
+        if (db.isDbLockedByCurrentThread()) {
+            synchronized (tableConfig) {
+                result[0] = isExistInternal(model);
+            }
+        } else {
+            // Do TX to acquire a connection before locking the stmt to avoid deadlocks
+            executeInTx(db, new RapidOrmFunc1() {
+                @Override
+                public void call() throws Exception {
+                    synchronized (tableConfig) {
+                        result[0] = isExistInternal(model);
+                    }
+                }
+            });
+        }
+        return result[0];
+    }
+
+    private boolean isExistInternal(T model) {
+        if (null == isExistStmt) {
+            throw new RuntimeException(tableConfig.getTableName() + " have no primary key, isExistStmt is null!");
+        }
+        isExistStmt.clearBindings();
+        tableConfig.bindPkArgs(model, isExistStmt, 0);
+        return isExistStmt.simpleQueryForLong() > 0;
+    }
+
+    @Override
+    public void insertOrUpdate(T model) throws Exception {
+        if (isExist(model)) {
+            update(model);
+        } else {
+            insert(model);
+        }
+    }
+
+    @SafeVarargs
+    @Override
+    public final void insertOrUpdate(T... models) throws Exception {
+        insertOrUpdate(Arrays.asList(models));
+    }
+
+    @Override
+    public void insertOrUpdate(Collection<T> models) throws Exception {
+        if (null != models) {
+            for (T model : models) {
+                insertOrUpdate(model);
+            }
+        }
+    }
+
+    @SafeVarargs
+    @Override
+    public final void insertOrUpdateInTx(T... models) throws Exception {
+        insertOrUpdateInTx(Arrays.asList(models));
+    }
+
+    @Override
+    public void insertOrUpdateInTx(final Collection<T> models) throws Exception {
+        if (null != models) {
+            executeInTx(new RapidOrmFunc1() {
+                @Override
+                public void call() throws Exception {
+                    for (T model : models) {
+                        insertOrUpdate(model);
+                    }
+                }
+            });
+        }
+    }
+
+    /*
+     * ********************* v2.2.0 insertOrUpdate END *************************
+     */
 
     /**
      * ********************* execute in tx *************************

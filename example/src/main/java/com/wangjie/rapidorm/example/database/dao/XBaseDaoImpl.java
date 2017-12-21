@@ -13,9 +13,4 @@ public class XBaseDaoImpl<T> extends BaseDaoImpl<T> {
     }
 
 
-    public void insertOrUpdate(T model) {
-
-
-    }
-
 }
