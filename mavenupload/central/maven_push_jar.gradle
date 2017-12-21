@@ -1,0 +1,83 @@
+// ********************************** upload archives ***********************************
+
+apply plugin: 'maven'
+apply plugin: 'signing' //使用signing plugin做数字签名
+
+//定义GroupID和Version，ArtefactID会自动使用Project名
+group = "$ARCHIVE_GROUP"
+version = "$ARCHIVE_VERSION_NAME"
+//sourceCompatibility = 1.7
+//targetCompatibility = 1.7
+
+//repositories {
+//    mavenCentral()
+//}
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+//    archives file("$archivePath")
+    archives javadocJar, sourcesJar
+}
+
+
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            //为Pom文件做数字签名
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            //指定项目部署到的中央库地址，UserName和Password就是Part 1中注册的账号。
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: "$ossrhUsername", password: "$ossrhPassword")
+            }
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: "$ossrhUsername", password: "$ossrhPassword")
+            }
+
+            //构造项目的Pom文件，参见Part 2中Pom文件的规范，不要遗漏必填项
+            pom.project {
+                artifactId "$POM_ARCHIVE_ID"
+                name "$POM_ARCHIVE_ID"
+                packaging 'jar'
+                description "$POM_DESC"
+                url "$POM_URL"
+
+                scm {
+                    url "$POM_SCM_URL"
+                    connection "$POM_SCM_CONNECTION"
+                    developerConnection "$POM_SCM_DEV_CONNECTION"
+                }
+
+                licenses {
+                    license {
+                        name POM_LICENCE_NAME
+                        url POM_LICENCE_URL
+                        distribution POM_LICENCE_DIST
+                    }
+                }
+
+                developers {
+                    developer {
+                        id POM_DEVELOPER_ID
+                        name POM_DEVELOPER_NAME
+                        email POM_DEVELOPER_EMAIL
+                    }
+                }
+            }
+        }
+    }
+}
