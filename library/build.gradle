@@ -52,5 +52,4 @@ dependencies {
 
 
 //apply from: 'nexus_aar_center.gradle'
-
-apply from: '../mavenupload/maven_push.gradle'
+//apply from: '../mavenupload/maven_push.gradle'

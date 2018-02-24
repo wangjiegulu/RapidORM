@@ -14,5 +14,4 @@ dependencies {
 }
 
 //apply from: 'nexus_jar_center.gradle'
-
-apply from: '../mavenupload/maven_push.gradle'
+//apply from: '../mavenupload/maven_push.gradle'
