@@ -5,7 +5,7 @@
 .DS_Store
 /build
 gradle.properties
-nexus_aar_db.gradle
+*/mavenupload/*
 
 # Built application files
 *.apk

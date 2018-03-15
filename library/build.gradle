@@ -50,6 +50,55 @@ dependencies {
 
 }
 
+// maven push
+apply plugin: 'com.github.wangjiegulu.plg.rapidmavenpush'
+rapidMavenPush {
+    printProperties = true
+    abortOnError = false
+    disable = false
+    defaultMavenType = 'local'
+    mavens {
+        maven {
+            mavenType = 'local'
+            propertyFiles = [
+                    file("mavenupload/maven_common.properties"),
+                    file("mavenupload/maven_local.properties")
+            ]
+            propertyInjectMode = 'replace'
+        }
+        maven {
+            mavenType = 'company'
+            propertyFiles = [
+                    file("mavenupload/maven_common.properties"),
+                    file("mavenupload/maven_company.properties")
+            ]
+            propertyInjectMode = 'replace'
+        }
+        maven {
+            mavenType = 'central'
+            propertyFiles = [
+                    file("mavenupload/maven_common.properties"),
+                    file("mavenupload/maven_central.properties")
+            ]
+            propertyInjectMode = 'replace'
+        }
+    }
+}
 
-//apply from: 'nexus_aar_center.gradle'
-//apply from: '../mavenupload/maven_push.gradle'
+// meta-inf
+import com.wangjiegulu.plg.rapidmavenpush.RapidParameterParser
+apply plugin: 'com.github.wangjiegulu.plg.rapidmetainf'
+project.afterEvaluate {
+    // META-INF properties
+    rapidmetainf {
+        RapidParameterParser rapidParameterParser = new RapidParameterParser(project)
+        metaInfName 'RAPIDORM.properties'
+        metaInfProperties "archiveName=${rapidParameterParser.getStringParameter('POM_ARCHIVE_ID')}",
+                "archiveVersion=${rapidParameterParser.getStringParameter('POM_ARCHIVE_VERSION_NAME')}",
+                "archiveUrl=${rapidParameterParser.getStringParameter('POM_URL')}",
+                "author=${rapidParameterParser.getStringParameter('POM_DEVELOPER_NAME')}",
+                "authorEmail=${rapidParameterParser.getStringParameter('POM_DEVELOPER_EMAIL')}"
+    }
+}
+
+

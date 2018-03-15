@@ -9,9 +9,57 @@ dependencies {
     implementation project(':library-api')
     implementation 'com.google.auto.service:auto-service:1.0-rc2'
     implementation 'com.google.auto:auto-common:0.6'
-    implementation 'com.squareup:javapoet:1.0.0'
+    implementation 'com.squareup:javapoet:1.8.0'
 
 }
 
-//apply from: 'nexus_jar_center.gradle'
-//apply from: '../mavenupload/maven_push.gradle'
+// maven push
+apply plugin: 'com.github.wangjiegulu.plg.rapidmavenpush'
+rapidMavenPush {
+    printProperties = true
+    abortOnError = false
+    disable = false
+    defaultMavenType = 'local'
+    mavens {
+        maven {
+            mavenType = 'local'
+            propertyFiles = [
+                    file("mavenupload/maven_common.properties"),
+                    file("mavenupload/maven_local.properties")
+            ]
+            propertyInjectMode = 'replace'
+        }
+        maven {
+            mavenType = 'company'
+            propertyFiles = [
+                    file("mavenupload/maven_common.properties"),
+                    file("mavenupload/maven_company.properties")
+            ]
+            propertyInjectMode = 'replace'
+        }
+        maven {
+            mavenType = 'central'
+            propertyFiles = [
+                    file("mavenupload/maven_common.properties"),
+                    file("mavenupload/maven_central.properties")
+            ]
+            propertyInjectMode = 'replace'
+        }
+    }
+}
+
+// meta-inf
+import com.wangjiegulu.plg.rapidmavenpush.RapidParameterParser
+apply plugin: 'com.github.wangjiegulu.plg.rapidmetainf'
+project.afterEvaluate {
+    // META-INF properties
+    rapidmetainf {
+        RapidParameterParser rapidParameterParser = new RapidParameterParser(project)
+        metaInfName 'RAPIDORM-COMPILER.properties'
+        metaInfProperties "archiveName=${rapidParameterParser.getStringParameter('POM_ARCHIVE_ID')}",
+                "archiveVersion=${rapidParameterParser.getStringParameter('POM_ARCHIVE_VERSION_NAME')}",
+                "archiveUrl=${rapidParameterParser.getStringParameter('POM_URL')}",
+                "author=${rapidParameterParser.getStringParameter('POM_DEVELOPER_NAME')}",
+                "authorEmail=${rapidParameterParser.getStringParameter('POM_DEVELOPER_EMAIL')}"
+    }
+}

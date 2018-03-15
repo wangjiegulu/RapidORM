@@ -17,7 +17,8 @@ public abstract class RapidBuilder {
         int size;
         String[] array = new String[size = args.size()];
         for (int i = 0; i < size; i++) {
-            array[i] = args.get(i).toString();
+            Object arg = args.get(i);
+            array[i] = null == arg ? null : arg.toString();
         }
         return array;
     }
