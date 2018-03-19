@@ -24,7 +24,7 @@ rapidMavenPush {
         maven {
             mavenType = 'local'
             propertyFiles = [
-                    file("mavenupload/maven_common.properties"),
+                    file("../mavenupload/maven_common.properties"),
                     file("mavenupload/maven_local.properties")
             ]
             propertyInjectMode = 'replace'
@@ -32,7 +32,7 @@ rapidMavenPush {
         maven {
             mavenType = 'company'
             propertyFiles = [
-                    file("mavenupload/maven_common.properties"),
+                    file("../mavenupload/maven_common.properties"),
                     file("mavenupload/maven_company.properties")
             ]
             propertyInjectMode = 'replace'
@@ -40,7 +40,7 @@ rapidMavenPush {
         maven {
             mavenType = 'central'
             propertyFiles = [
-                    file("mavenupload/maven_common.properties"),
+                    file("../mavenupload/maven_common.properties"),
                     file("mavenupload/maven_central.properties")
             ]
             propertyInjectMode = 'replace'

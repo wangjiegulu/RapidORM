@@ -12,7 +12,7 @@ buildscript {
         classpath('com.github.wangjiegulu:rapidmetainf:1.0.0') {
             exclude group: 'com.android.tools.build', module: 'gradle'
         }
-        classpath('com.github.wangjiegulu:rapidmavenpush:0.0.3') {
+        classpath('com.github.wangjiegulu:rapidmavenpush:0.0.4') {
             exclude group: 'com.android.tools.build', module: 'gradle'
         }
     }
