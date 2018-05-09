@@ -1,9 +1,14 @@
 # RapidORM
 ### Quick solution for Android ORM
 
+[![](https://img.shields.io/badge/license-Apache%202-orange.svg)](http://www.apache.org/licenses/LICENSE-2.0) ![API](https://img.shields.io/badge/API-14%2B-brightgreen.svg?style=flat)
+
+[![](https://img.shields.io/badge/blog-Wang%20Jie-228377.svg)](https://blog.wangjiegulu.com) [![](https://img.shields.io/badge/twitter-@wangjiegulu-blue.svg)](https://twitter.com/wangjiegulu)
+
 Android lightweight, high performance ORM framework.
 
 ## About RapidORM
+
 - Primary key is supported with any type.
 - Non-reflective to execute SQLs.
 - Compatible with both `android.database.sqlite.SQLiteDatabase` and `net.sqlcipher.database.SQLiteDatabase`.
@@ -17,7 +22,13 @@ Android lightweight, high performance ORM framework.
 
 ### 1. Compile it in `build.gradle`
 
-###Gadle([Check newest version](http://search.maven.org/#search%7Cga%7C1%7CRapidORM))
+### Gadle([Check newest version](http://search.maven.org/#search%7Cga%7C1%7CRapidORM))
+
+- **rapidorm:** [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.wangjiegulu/rapidorm/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.wangjiegulu/rapidorm)
+
+- **rapidorm-api:** [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.wangjiegulu/rapidorm-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.wangjiegulu/rapidorm-api)
+
+- **rapidorm-compiler:** [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.wangjiegulu/rapidorm-compiler/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.wangjiegulu/rapidorm-compiler)
 
 ```groovy
 compile "com.github.wangjiegulu:rapidorm:x.x.x"
@@ -27,7 +38,7 @@ compile "com.github.wangjiegulu:rapidorm-api:x.x.x"
 apt "com.github.wangjiegulu:rapidorm-compiler:x.x.x"
 ```
 
-###Maven([Check newest version](http://search.maven.org/#search%7Cga%7C1%7CRapidORM))
+### Maven
 
 ```xml
 <dependency>
@@ -348,6 +359,7 @@ protected void registerTableConfigMapper(HashMap<Class, TableConfig> tableConfig
 > `QueryBuilder`, `UpdateBuilder`, `DeleteBuilder`
 
 #### 5.1 QueryBuilder
+
 ```java
 public List<Person> findPersonsByWhere() throws Exception {
     return queryBuilder()
@@ -393,6 +405,7 @@ public void updatePerson() throws Exception {
 ```
 
 #### 5.3 DeleteBuilder
+
 ```java
 public void deletePerson() throws Exception {
     deleteBuilder()
