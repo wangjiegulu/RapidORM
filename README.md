@@ -31,7 +31,7 @@ Android lightweight, high performance ORM framework.
 - **rapidorm-compiler:** [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.wangjiegulu/rapidorm-compiler/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.wangjiegulu/rapidorm-compiler)
 
 ```groovy
-compile "com.github.wangjiegulu:rapidorm:x.x.x"
+compile "com.github.wangjiegulu:rapidorm:x.x.x@aar"
 
 compile "com.github.wangjiegulu:rapidorm-api:x.x.x"
 
